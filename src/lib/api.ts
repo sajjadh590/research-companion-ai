@@ -11,7 +11,7 @@ interface SearchParams {
 }
 
 interface AnalyzeParams {
-  type: 'summarize' | 'research_gaps' | 'pico' | 'risk_of_bias' | 'key_findings';
+  type: 'summarize' | 'unified_summary' | 'research_gaps' | 'pico' | 'risk_of_bias' | 'key_findings';
   articles: { title: string; abstract: string }[];
   language?: string;
 }
