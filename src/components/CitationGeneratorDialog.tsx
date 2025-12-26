@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,6 +16,7 @@ interface CitationGeneratorDialogProps {
 type CitationStyle = 'apa' | 'vancouver' | 'harvard' | 'mla' | 'chicago';
 
 export function CitationGeneratorDialog({ articles, trigger }: CitationGeneratorDialogProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
@@ -109,7 +111,7 @@ export function CitationGeneratorDialog({ articles, trigger }: CitationGenerator
     await navigator.clipboard.writeText(text);
     setCopiedIndex(index);
     setTimeout(() => setCopiedIndex(null), 2000);
-    toast({ title: 'Copied', description: 'Citation copied to clipboard' });
+    toast({ title: t('common.copied'), description: '' });
   };
 
   const exportAll = () => {
@@ -137,7 +139,7 @@ export function CitationGeneratorDialog({ articles, trigger }: CitationGenerator
         {trigger || (
           <Button variant="secondary" size="sm">
             <Quote className="w-4 h-4 mr-1" />
-            Cite
+            {t('citation.title')}
           </Button>
         )}
       </DialogTrigger>
@@ -145,7 +147,7 @@ export function CitationGeneratorDialog({ articles, trigger }: CitationGenerator
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Quote className="w-5 h-5" />
-            Generate Citations ({articles.length} articles)
+            {t('citation.title')} ({articles.length})
           </DialogTitle>
         </DialogHeader>
 
@@ -158,7 +160,7 @@ export function CitationGeneratorDialog({ articles, trigger }: CitationGenerator
             </TabsList>
             <Button variant="outline" size="sm" onClick={exportAll}>
               <Download className="w-4 h-4 mr-1" />
-              Export All
+              {t('citation.exportTxt')}
             </Button>
           </div>
 
@@ -183,9 +185,9 @@ export function CitationGeneratorDialog({ articles, trigger }: CitationGenerator
                           onClick={() => copyToClipboard(citation, index)}
                         >
                           {copiedIndex === index ? (
-                            <><Check className="w-3 h-3 mr-1" /> Copied</>
+                            <><Check className="w-3 h-3 mr-1" /> {t('common.copied')}</>
                           ) : (
-                            <><Copy className="w-3 h-3 mr-1" /> Copy</>
+                            <><Copy className="w-3 h-3 mr-1" /> {t('common.copy')}</>
                           )}
                         </Button>
                       </div>

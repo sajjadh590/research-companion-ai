@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -26,6 +27,7 @@ interface ComparisonData {
 }
 
 export function StudyComparisonDialog({ articles, trigger }: StudyComparisonDialogProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -49,7 +51,7 @@ export function StudyComparisonDialog({ articles, trigger }: StudyComparisonDial
       setComparisonData(data.comparison);
     } catch (error) {
       console.error('Comparison error:', error);
-      toast({ title: 'Error', description: 'Failed to generate comparison', variant: 'destructive' });
+      toast({ title: t('common.error'), description: t('comparison.error'), variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +90,7 @@ export function StudyComparisonDialog({ articles, trigger }: StudyComparisonDial
         {trigger || (
           <Button variant="secondary" size="sm">
             <TableProperties className="w-4 h-4 mr-1" />
-            Compare Studies
+            {t('comparison.compare')}
           </Button>
         )}
       </DialogTrigger>
@@ -96,7 +98,7 @@ export function StudyComparisonDialog({ articles, trigger }: StudyComparisonDial
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <TableProperties className="w-5 h-5" />
-            Study Comparison Table ({articles.length} studies)
+            {t('comparison.title')} ({articles.length})
           </DialogTitle>
         </DialogHeader>
 
@@ -104,13 +106,13 @@ export function StudyComparisonDialog({ articles, trigger }: StudyComparisonDial
           <div className="flex flex-col items-center justify-center py-12">
             <TableProperties className="w-12 h-12 text-muted-foreground mb-4" />
             <p className="text-muted-foreground mb-4">
-              AI will analyze {articles.length} articles and extract key characteristics for comparison
+              {t('comparison.selectArticles')}
             </p>
             <Button onClick={generateComparison} disabled={isLoading}>
               {isLoading ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Analyzing...</>
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t('comparison.comparing')}</>
               ) : (
-                'Generate Comparison Table'
+                t('comparison.compare')
               )}
             </Button>
           </div>
@@ -119,21 +121,21 @@ export function StudyComparisonDialog({ articles, trigger }: StudyComparisonDial
             <div className="flex justify-end mb-2">
               <Button variant="outline" size="sm" onClick={exportTable}>
                 <Download className="w-4 h-4 mr-1" />
-                Export CSV
+                {t('comparison.exportCsv')}
               </Button>
             </div>
             <ScrollArea className="h-[500px]">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="min-w-[200px]">Study</TableHead>
-                    <TableHead className="min-w-[120px]">Population</TableHead>
-                    <TableHead className="min-w-[120px]">Intervention</TableHead>
+                    <TableHead className="min-w-[200px]">{t('comparison.study')}</TableHead>
+                    <TableHead className="min-w-[120px]">{t('comparison.population')}</TableHead>
+                    <TableHead className="min-w-[120px]">{t('comparison.intervention')}</TableHead>
                     <TableHead className="min-w-[120px]">Comparison</TableHead>
-                    <TableHead className="min-w-[120px]">Outcome</TableHead>
-                    <TableHead className="min-w-[100px]">Design</TableHead>
+                    <TableHead className="min-w-[120px]">{t('comparison.outcome')}</TableHead>
+                    <TableHead className="min-w-[100px]">{t('comparison.design')}</TableHead>
                     <TableHead className="min-w-[80px]">N</TableHead>
-                    <TableHead className="min-w-[200px]">Key Findings</TableHead>
+                    <TableHead className="min-w-[200px]">{t('comparison.keyFindings')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

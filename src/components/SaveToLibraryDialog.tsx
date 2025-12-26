@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -22,6 +23,7 @@ interface Project {
 }
 
 export function SaveToLibraryDialog({ articles, trigger, onSaved }: SaveToLibraryDialogProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -60,7 +62,7 @@ export function SaveToLibraryDialog({ articles, trigger, onSaved }: SaveToLibrar
 
   const createNewProject = async () => {
     if (!newProjectTitle.trim() || !newProjectTopic.trim()) {
-      toast({ title: 'Error', description: 'Please fill in title and topic', variant: 'destructive' });
+      toast({ title: t('common.error'), description: t('saveLibrary.selectProject'), variant: 'destructive' });
       return;
     }
 
@@ -82,10 +84,10 @@ export function SaveToLibraryDialog({ articles, trigger, onSaved }: SaveToLibrar
       setShowNewProject(false);
       setNewProjectTitle('');
       setNewProjectTopic('');
-      toast({ title: 'Success', description: 'Project created' });
+      toast({ title: t('saveLibrary.success'), description: '' });
     } catch (error) {
       console.error('Error creating project:', error);
-      toast({ title: 'Error', description: 'Failed to create project', variant: 'destructive' });
+      toast({ title: t('common.error'), description: '', variant: 'destructive' });
     } finally {
       setIsSaving(false);
     }
@@ -93,7 +95,7 @@ export function SaveToLibraryDialog({ articles, trigger, onSaved }: SaveToLibrar
 
   const saveArticles = async () => {
     if (!selectedProjectId) {
-      toast({ title: 'Error', description: 'Please select a project', variant: 'destructive' });
+      toast({ title: t('common.error'), description: t('saveLibrary.selectProject'), variant: 'destructive' });
       return;
     }
 
@@ -121,14 +123,14 @@ export function SaveToLibraryDialog({ articles, trigger, onSaved }: SaveToLibrar
       if (error) throw error;
 
       toast({ 
-        title: 'Saved', 
-        description: `${articles.length} article(s) saved to library` 
+        title: t('saveLibrary.success'), 
+        description: `${articles.length} ${t('chat.articles')}`
       });
       setOpen(false);
       onSaved?.();
     } catch (error) {
       console.error('Error saving articles:', error);
-      toast({ title: 'Error', description: 'Failed to save articles', variant: 'destructive' });
+      toast({ title: t('common.error'), description: '', variant: 'destructive' });
     } finally {
       setIsSaving(false);
     }
@@ -140,17 +142,17 @@ export function SaveToLibraryDialog({ articles, trigger, onSaved }: SaveToLibrar
         {trigger || (
           <Button variant="ghost" size="sm">
             <Bookmark className="w-4 h-4 mr-1" />
-            Save ({articles.length})
+            {t('common.save')} ({articles.length})
           </Button>
         )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Save to Library</DialogTitle>
+          <DialogTitle>{t('saveLibrary.title')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 mt-4">
           <p className="text-sm text-muted-foreground">
-            Saving {articles.length} article(s) to your library
+            {t('saveLibrary.save')} {articles.length} {t('chat.articles')}
           </p>
 
           {isLoading ? (
@@ -160,40 +162,40 @@ export function SaveToLibraryDialog({ articles, trigger, onSaved }: SaveToLibrar
           ) : showNewProject ? (
             <div className="space-y-3">
               <div>
-                <Label>Project Title</Label>
+                <Label>{t('saveLibrary.projectName')}</Label>
                 <Input
                   value={newProjectTitle}
                   onChange={(e) => setNewProjectTitle(e.target.value)}
-                  placeholder="Enter project title"
+                  placeholder={t('saveLibrary.projectName')}
                   className="mt-1"
                 />
               </div>
               <div>
-                <Label>Research Topic</Label>
+                <Label>{t('saveLibrary.projectTopic')}</Label>
                 <Input
                   value={newProjectTopic}
                   onChange={(e) => setNewProjectTopic(e.target.value)}
-                  placeholder="Enter research topic"
+                  placeholder={t('saveLibrary.projectTopic')}
                   className="mt-1"
                 />
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setShowNewProject(false)} className="flex-1">
-                  Cancel
+                  {t('common.cancel')}
                 </Button>
                 <Button onClick={createNewProject} disabled={isSaving} className="flex-1">
                   {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  Create
+                  {t('saveLibrary.createNew')}
                 </Button>
               </div>
             </div>
           ) : (
             <>
               <div>
-                <Label>Select Project</Label>
+                <Label>{t('saveLibrary.existingProject')}</Label>
                 <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
                   <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select a project" />
+                    <SelectValue placeholder={t('saveLibrary.selectProject')} />
                   </SelectTrigger>
                   <SelectContent>
                     {projects.map(project => (
@@ -211,7 +213,7 @@ export function SaveToLibraryDialog({ articles, trigger, onSaved }: SaveToLibrar
                 onClick={() => setShowNewProject(true)}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Create New Project
+                {t('saveLibrary.createNew')}
               </Button>
 
               <Button 
@@ -220,7 +222,7 @@ export function SaveToLibraryDialog({ articles, trigger, onSaved }: SaveToLibrar
                 className="w-full"
               >
                 {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Save to Library
+                {t('saveLibrary.save')}
               </Button>
             </>
           )}

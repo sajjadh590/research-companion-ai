@@ -163,7 +163,7 @@ export default function SearchPage() {
       <div className="max-w-7xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">{t('search.title')}</h1>
-          <p className="text-muted-foreground mt-1">Search across multiple academic databases</p>
+          <p className="text-muted-foreground mt-1">{t('search.subtitle')}</p>
         </div>
 
         {/* Search Controls */}
@@ -257,7 +257,7 @@ export default function SearchPage() {
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={selectAll}>
-                    {selectedArticles.size === articles.length ? 'Deselect All' : 'Select All'}
+                    {selectedArticles.size === articles.length ? t('search.deselectAll') : t('search.selectAll')}
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => exportResults('csv')}>
                     <Download className="w-4 h-4 mr-1" /> CSV
@@ -278,7 +278,7 @@ export default function SearchPage() {
                   disabled={isAnalyzing || selectedArticles.size === 0}
                 >
                   <Brain className="w-4 h-4 mr-1" />
-                  {isAnalyzing ? 'Analyzing...' : 'Individual Summaries'}
+                  {isAnalyzing ? t('search.analyzing') : t('search.individualSummaries')}
                 </Button>
                 <Button
                   variant="default"
@@ -287,7 +287,7 @@ export default function SearchPage() {
                   disabled={isAnalyzing || selectedArticles.size === 0}
                 >
                   <Brain className="w-4 h-4 mr-1" />
-                  Unified Synthesis
+                  {t('search.unifiedSynthesis')}
                 </Button>
                 <Button
                   variant="secondary"
@@ -295,7 +295,7 @@ export default function SearchPage() {
                   onClick={() => handleAnalyze('research_gaps')}
                   disabled={isAnalyzing || selectedArticles.size === 0}
                 >
-                  Research Gaps
+                  {t('search.researchGaps')}
                 </Button>
                 <Button
                   variant="secondary"
@@ -303,7 +303,7 @@ export default function SearchPage() {
                   onClick={() => handleAnalyze('pico')}
                   disabled={isAnalyzing || selectedArticles.size === 0}
                 >
-                  PICO Analysis
+                  {t('search.picoAnalysis')}
                 </Button>
                 <Button
                   variant="secondary"
@@ -311,7 +311,7 @@ export default function SearchPage() {
                   onClick={() => handleAnalyze('key_findings')}
                   disabled={isAnalyzing || selectedArticles.size === 0}
                 >
-                  Key Findings
+                  {t('search.keyFindings')}
                 </Button>
                 
                 {/* New AI Tools */}
