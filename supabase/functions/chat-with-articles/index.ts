@@ -26,13 +26,13 @@ serve(async (req) => {
     }
 
     const languageInstructions: Record<string, string> = {
-      en: 'Respond in English.',
-      fa: 'Respond in Persian (Farsi).',
-      ar: 'Respond in Arabic.',
-      tr: 'Respond in Turkish.',
+      en: 'You MUST respond in English.',
+      fa: 'شما باید به زبان فارسی پاسخ دهید. You MUST respond in Persian (Farsi).',
+      ar: 'يجب أن تجيب باللغة العربية. You MUST respond in Arabic.',
+      tr: 'Türkçe yanıt vermelisiniz. You MUST respond in Turkish.',
     };
 
-    const langInstruction = languageInstructions[language] || languageInstructions.en;
+    const langInstruction = languageInstructions[language] || 'Respond in the same language as the user\'s question.';
 
     const articlesContext = articles.map((a, i) => 
       `[${i + 1}] "${a.title}"${a.authors ? ` by ${a.authors}` : ''}${a.journal ? ` (${a.journal}` : ''}${a.year ? `, ${a.year}` : ''}${a.journal ? ')' : ''}\nAbstract: ${a.abstract || 'Not available'}`

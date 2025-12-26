@@ -34,6 +34,7 @@
   },
   "search": {
     "title": "Search Articles",
+    "subtitle": "Search across multiple academic databases",
     "placeholder": "Enter your research topic...",
     "sources": "Data Sources",
     "filters": "Filters",
@@ -47,9 +48,22 @@
     "save": "Save to Library",
     "saved": "Saved",
     "viewAbstract": "View Abstract",
+    "hideAbstract": "Hide Abstract",
     "citations": "Citations",
     "authors": "Authors",
-    "journal": "Journal"
+    "journal": "Journal",
+    "maxResults": "Max Results",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "selected": "selected",
+    "analyzing": "Analyzing...",
+    "individualSummaries": "Individual Summaries",
+    "unifiedSynthesis": "Unified Synthesis",
+    "researchGaps": "Research Gaps",
+    "picoAnalysis": "PICO Analysis",
+    "keyFindings": "Key Findings",
+    "aiAnalysis": "AI Analysis",
+    "view": "View"
   },
   "library": {
     "title": "My Library",
@@ -115,7 +129,10 @@
     "pdf": "PDF",
     "all": "All",
     "selected": "Selected",
-    "clear": "Clear"
+    "clear": "Clear",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "close": "Close"
   },
   "settings": {
     "title": "Settings",
@@ -125,6 +142,52 @@
     "dark": "Dark",
     "system": "System",
     "delay": "API Delay (seconds)",
-    "maxArticles": "Max Articles per Search"
+    "maxArticles": "Max Articles per Search",
+    "autoSave": "Auto-save search results",
+    "about": "About",
+    "version": "Version",
+    "documentation": "Documentation"
+  },
+  "chat": {
+    "title": "Chat with Articles",
+    "chatWith": "Chat with",
+    "articles": "Article(s)",
+    "placeholder": "Ask a question about the articles...",
+    "welcome": "I have access to {{count}} article(s) you selected. Ask me anything about them - I can help with summaries, comparisons, methodology analysis, findings, and more!",
+    "error": "Failed to get response"
+  },
+  "citation": {
+    "title": "Generate Citations",
+    "format": "Citation Format",
+    "generate": "Generate Citations",
+    "copyAll": "Copy All",
+    "exportTxt": "Export TXT",
+    "selectArticles": "Select articles to generate citations"
+  },
+  "comparison": {
+    "title": "Compare Studies",
+    "compare": "Compare Studies",
+    "comparing": "Comparing...",
+    "exportCsv": "Export CSV",
+    "study": "Study",
+    "population": "Population",
+    "intervention": "Intervention",
+    "outcome": "Outcome",
+    "design": "Design",
+    "sampleSize": "Sample Size",
+    "keyFindings": "Key Findings",
+    "selectArticles": "Select articles to compare"
+  },
+  "saveLibrary": {
+    "title": "Save to Library",
+    "selectProject": "Select a project or create a new one",
+    "projectName": "Project Name",
+    "projectTopic": "Project Topic",
+    "createNew": "Create New Project",
+    "existingProject": "Existing Project",
+    "saving": "Saving...",
+    "save": "Save to Library",
+    "success": "Articles saved successfully",
+    "selectArticles": "Select articles to save"
   }
 }

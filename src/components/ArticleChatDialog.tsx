@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +20,7 @@ interface Message {
 }
 
 export function ArticleChatDialog({ articles, trigger }: ArticleChatDialogProps) {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -36,10 +38,10 @@ export function ArticleChatDialog({ articles, trigger }: ArticleChatDialogProps)
     if (open && messages.length === 0) {
       setMessages([{
         role: 'assistant',
-        content: `I have access to ${articles.length} article(s) you selected. Ask me anything about them - I can help with summaries, comparisons, methodology analysis, findings, and more!`
+        content: t('chat.welcome', { count: articles.length })
       }]);
     }
-  }, [open, articles.length]);
+  }, [open, articles.length, t]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -60,7 +62,8 @@ export function ArticleChatDialog({ articles, trigger }: ArticleChatDialogProps)
             journal: a.journal,
             year: a.publicationDate
           })),
-          history: messages.slice(-6) // Send last 6 messages for context
+          history: messages.slice(-6),
+          language: i18n.language
         }
       });
 
@@ -69,10 +72,10 @@ export function ArticleChatDialog({ articles, trigger }: ArticleChatDialogProps)
       setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
     } catch (error) {
       console.error('Chat error:', error);
-      toast({ title: 'Error', description: 'Failed to get response', variant: 'destructive' });
+      toast({ title: t('common.error'), description: t('chat.error'), variant: 'destructive' });
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: 'Sorry, I encountered an error. Please try again.' 
+        content: t('chat.error')
       }]);
     } finally {
       setIsLoading(false);
@@ -92,7 +95,7 @@ export function ArticleChatDialog({ articles, trigger }: ArticleChatDialogProps)
         {trigger || (
           <Button variant="secondary" size="sm">
             <MessageCircle className="w-4 h-4 mr-1" />
-            Chat with Articles
+            {t('chat.title')}
           </Button>
         )}
       </DialogTrigger>
@@ -100,7 +103,7 @@ export function ArticleChatDialog({ articles, trigger }: ArticleChatDialogProps)
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MessageCircle className="w-5 h-5" />
-            Chat with {articles.length} Article(s)
+            {t('chat.chatWith')} {articles.length} {t('chat.articles')}
           </DialogTitle>
         </DialogHeader>
         
@@ -150,7 +153,7 @@ export function ArticleChatDialog({ articles, trigger }: ArticleChatDialogProps)
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask a question about the articles..."
+            placeholder={t('chat.placeholder')}
             disabled={isLoading}
             className="flex-1"
           />

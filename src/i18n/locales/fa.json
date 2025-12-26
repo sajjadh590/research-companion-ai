@@ -34,6 +34,7 @@
   },
   "search": {
     "title": "جستجوی مقالات",
+    "subtitle": "جستجو در چندین پایگاه داده علمی",
     "placeholder": "موضوع تحقیق خود را وارد کنید...",
     "sources": "منابع داده",
     "filters": "فیلترها",
@@ -47,9 +48,22 @@
     "save": "ذخیره در کتابخانه",
     "saved": "ذخیره شد",
     "viewAbstract": "مشاهده چکیده",
+    "hideAbstract": "مخفی کردن چکیده",
     "citations": "استنادات",
     "authors": "نویسندگان",
-    "journal": "ژورنال"
+    "journal": "ژورنال",
+    "maxResults": "حداکثر نتایج",
+    "selectAll": "انتخاب همه",
+    "deselectAll": "لغو انتخاب همه",
+    "selected": "انتخاب شده",
+    "analyzing": "در حال تحلیل...",
+    "individualSummaries": "خلاصه‌های جداگانه",
+    "unifiedSynthesis": "سنتز یکپارچه",
+    "researchGaps": "شکاف‌های تحقیقاتی",
+    "picoAnalysis": "تحلیل PICO",
+    "keyFindings": "یافته‌های کلیدی",
+    "aiAnalysis": "تحلیل هوش مصنوعی",
+    "view": "مشاهده"
   },
   "library": {
     "title": "کتابخانه من",
@@ -115,7 +129,10 @@
     "pdf": "PDF",
     "all": "همه",
     "selected": "انتخاب شده",
-    "clear": "پاک کردن"
+    "clear": "پاک کردن",
+    "copy": "کپی",
+    "copied": "کپی شد!",
+    "close": "بستن"
   },
   "settings": {
     "title": "تنظیمات",
@@ -125,6 +142,52 @@
     "dark": "تاریک",
     "system": "سیستم",
     "delay": "تأخیر API (ثانیه)",
-    "maxArticles": "حداکثر مقالات در هر جستجو"
+    "maxArticles": "حداکثر مقالات در هر جستجو",
+    "autoSave": "ذخیره خودکار نتایج جستجو",
+    "about": "درباره",
+    "version": "نسخه",
+    "documentation": "مستندات"
+  },
+  "chat": {
+    "title": "گفتگو با مقالات",
+    "chatWith": "گفتگو با",
+    "articles": "مقاله",
+    "placeholder": "سوال خود را درباره مقالات بپرسید...",
+    "welcome": "به {{count}} مقاله انتخاب شده شما دسترسی دارم. هر سوالی درباره آنها دارید بپرسید - می‌توانم در خلاصه‌سازی، مقایسه، تحلیل روش‌ها و یافته‌ها کمکتان کنم!",
+    "error": "دریافت پاسخ با خطا مواجه شد"
+  },
+  "citation": {
+    "title": "تولید رفرنس",
+    "format": "فرمت رفرنس",
+    "generate": "تولید رفرنس‌ها",
+    "copyAll": "کپی همه",
+    "exportTxt": "خروجی TXT",
+    "selectArticles": "مقالات را برای تولید رفرنس انتخاب کنید"
+  },
+  "comparison": {
+    "title": "مقایسه مطالعات",
+    "compare": "مقایسه مطالعات",
+    "comparing": "در حال مقایسه...",
+    "exportCsv": "خروجی CSV",
+    "study": "مطالعه",
+    "population": "جمعیت",
+    "intervention": "مداخله",
+    "outcome": "پیامد",
+    "design": "طراحی",
+    "sampleSize": "حجم نمونه",
+    "keyFindings": "یافته‌های کلیدی",
+    "selectArticles": "مقالات را برای مقایسه انتخاب کنید"
+  },
+  "saveLibrary": {
+    "title": "ذخیره در کتابخانه",
+    "selectProject": "یک پروژه انتخاب کنید یا جدید بسازید",
+    "projectName": "نام پروژه",
+    "projectTopic": "موضوع پروژه",
+    "createNew": "ایجاد پروژه جدید",
+    "existingProject": "پروژه موجود",
+    "saving": "در حال ذخیره...",
+    "save": "ذخیره در کتابخانه",
+    "success": "مقالات با موفقیت ذخیره شدند",
+    "selectArticles": "مقالات را برای ذخیره انتخاب کنید"
   }
 }
