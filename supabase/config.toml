@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.generate-proposal]
 verify_jwt = false
+
+[functions.chat-with-articles]
+verify_jwt = false
+
+[functions.compare-studies]
+verify_jwt = false
