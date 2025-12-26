@@ -6,10 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Loader2, BookOpen, ExternalLink, Download, Brain, Bookmark } from 'lucide-react';
+import { Search, Loader2, BookOpen, ExternalLink, Download, Brain } from 'lucide-react';
 import { searchArticles, analyzeArticles } from '@/lib/api';
 import { Layout } from '@/components/Layout';
+import { SaveToLibraryDialog } from '@/components/SaveToLibraryDialog';
+import { ArticleChatDialog } from '@/components/ArticleChatDialog';
+import { CitationGeneratorDialog } from '@/components/CitationGeneratorDialog';
+import { StudyComparisonDialog } from '@/components/StudyComparisonDialog';
 import type { Article } from '@/types/research';
 import { useToast } from '@/hooks/use-toast';
 
@@ -310,6 +313,20 @@ export default function SearchPage() {
                 >
                   Key Findings
                 </Button>
+                
+                {/* New AI Tools */}
+                <ArticleChatDialog 
+                  articles={articles.filter(a => selectedArticles.has(a.id))} 
+                />
+                <CitationGeneratorDialog 
+                  articles={articles.filter(a => selectedArticles.has(a.id))} 
+                />
+                <StudyComparisonDialog 
+                  articles={articles.filter(a => selectedArticles.has(a.id))} 
+                />
+                <SaveToLibraryDialog 
+                  articles={articles.filter(a => selectedArticles.has(a.id))} 
+                />
               </div>
 
               {/* Analysis Result */}
@@ -394,10 +411,6 @@ export default function SearchPage() {
                               </a>
                             </Button>
                           )}
-                          <Button variant="ghost" size="sm">
-                            <Bookmark className="w-3 h-3 mr-1" />
-                            Save
-                          </Button>
                         </div>
                       </div>
                     </div>
