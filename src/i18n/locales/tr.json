@@ -1,0 +1,130 @@
+{
+  "app": {
+    "title": "Araştırma Asistanı",
+    "subtitle": "Yapay Zeka Destekli Araştırma Yardımcısı"
+  },
+  "nav": {
+    "home": "Ana Sayfa",
+    "search": "Makale Arama",
+    "library": "Kütüphanem",
+    "systematic": "Sistematik İnceleme",
+    "metaAnalysis": "Meta-Analiz",
+    "sampleSize": "Örneklem Büyüklüğü",
+    "proposal": "Öneri Yazarı",
+    "settings": "Ayarlar"
+  },
+  "home": {
+    "welcome": "Araştırma Asistanına Hoş Geldiniz",
+    "description": "Akademik araştırma için yapay zeka destekli yardımcınız. Milyonlarca makaleyi arayın, araştırma boşluklarını analiz edin, sistematik incelemeler yapın ve öneriler oluşturun.",
+    "getStarted": "Başlayın",
+    "features": {
+      "search": "Çoklu Kaynak Arama",
+      "searchDesc": "PubMed, OpenAlex, Semantic Scholar, arXiv ve CORE'da eşzamanlı arama",
+      "ai": "Yapay Zeka Analizi",
+      "aiDesc": "Akıllı özetleme, araştırma boşluğu belirleme ve PICO çıkarma",
+      "systematic": "Sistematik İnceleme",
+      "systematicDesc": "Otomatik tarama ve kalite değerlendirmesi ile PRISMA iş akışı",
+      "meta": "Meta-Analiz",
+      "metaDesc": "İstatistiksel hesaplamalar, orman grafiği, huni grafiği ve heterojenlik analizi",
+      "sample": "Örneklem Büyüklüğü Hesaplayıcı",
+      "sampleDesc": "Çeşitli çalışma tasarımları için güç analizi ve örneklem büyüklüğü hesaplamaları",
+      "proposal": "Öneri Oluşturucu",
+      "proposalDesc": "Özelleştirilebilir şablonlarla yapay zeka destekli öneri ve makale yazımı"
+    }
+  },
+  "search": {
+    "title": "Makale Arama",
+    "placeholder": "Araştırma konunuzu girin...",
+    "sources": "Veri Kaynakları",
+    "filters": "Filtreler",
+    "yearRange": "Yıl Aralığı",
+    "articleType": "Makale Türü",
+    "openAccess": "Sadece Açık Erişim",
+    "search": "Ara",
+    "searching": "Aranıyor...",
+    "results": "Sonuçlar",
+    "noResults": "Sonuç bulunamadı",
+    "save": "Kütüphaneye Kaydet",
+    "saved": "Kaydedildi",
+    "viewAbstract": "Özeti Görüntüle",
+    "citations": "Atıflar",
+    "authors": "Yazarlar",
+    "journal": "Dergi"
+  },
+  "library": {
+    "title": "Kütüphanem",
+    "articles": "Makaleler",
+    "projects": "Projeler",
+    "newProject": "Yeni Proje",
+    "empty": "Kütüphaneniz boş",
+    "addArticles": "Makaleleri arayın ve kütüphanenize ekleyin"
+  },
+  "systematic": {
+    "title": "Sistematik İnceleme",
+    "prisma": "PRISMA İş Akışı",
+    "identification": "Tanımlama",
+    "screening": "Tarama",
+    "eligibility": "Uygunluk",
+    "included": "Dahil Edilenler",
+    "riskOfBias": "Önyargı Riski",
+    "pico": "PICO Analizi",
+    "flowDiagram": "PRISMA Akış Diyagramı"
+  },
+  "meta": {
+    "title": "Meta-Analiz",
+    "dataEntry": "Veri Girişi",
+    "calculations": "Hesaplamalar",
+    "effectSize": "Etki Büyüklüğü",
+    "forestPlot": "Orman Grafiği",
+    "funnelPlot": "Huni Grafiği",
+    "heterogeneity": "Heterojenlik",
+    "sensitivity": "Duyarlılık Analizi",
+    "subgroup": "Alt Grup Analizi"
+  },
+  "sample": {
+    "title": "Örneklem Büyüklüğü Hesaplayıcı",
+    "studyType": "Çalışma Türü",
+    "effectSize": "Beklenen Etki Büyüklüğü",
+    "power": "Güç",
+    "alpha": "Anlamlılık Düzeyi",
+    "calculate": "Hesapla",
+    "result": "Gerekli Örneklem Büyüklüğü",
+    "fromLiterature": "Literatürden Tahmin"
+  },
+  "proposal": {
+    "title": "Öneri Yazarı",
+    "template": "Şablon",
+    "sections": "Bölümler",
+    "generate": "Oluştur",
+    "edit": "Düzenle",
+    "export": "Dışa Aktar"
+  },
+  "common": {
+    "loading": "Yükleniyor...",
+    "error": "Bir hata oluştu",
+    "retry": "Yeniden Dene",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "export": "Dışa Aktar",
+    "download": "İndir",
+    "csv": "CSV",
+    "json": "JSON",
+    "ris": "RIS",
+    "pdf": "PDF",
+    "all": "Tümü",
+    "selected": "Seçili",
+    "clear": "Temizle"
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "language": "Dil",
+    "theme": "Tema",
+    "light": "Açık",
+    "dark": "Koyu",
+    "system": "Sistem",
+    "delay": "API Gecikmesi (saniye)",
+    "maxArticles": "Arama Başına Maks Makale"
+  }
+}

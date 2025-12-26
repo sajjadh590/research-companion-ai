@@ -1,0 +1,130 @@
+{
+  "app": {
+    "title": "Research Copilot",
+    "subtitle": "AI-Powered Research Assistant"
+  },
+  "nav": {
+    "home": "Home",
+    "search": "Search Articles",
+    "library": "My Library",
+    "systematic": "Systematic Review",
+    "metaAnalysis": "Meta-Analysis",
+    "sampleSize": "Sample Size",
+    "proposal": "Proposal Writer",
+    "settings": "Settings"
+  },
+  "home": {
+    "welcome": "Welcome to Research Copilot",
+    "description": "Your AI-powered assistant for academic research. Search millions of articles, analyze research gaps, conduct systematic reviews, and generate proposals.",
+    "getStarted": "Get Started",
+    "features": {
+      "search": "Multi-Source Search",
+      "searchDesc": "Search across PubMed, OpenAlex, Semantic Scholar, arXiv, and CORE simultaneously",
+      "ai": "AI Analysis",
+      "aiDesc": "Intelligent summarization, research gap identification, and PICO extraction",
+      "systematic": "Systematic Review",
+      "systematicDesc": "PRISMA-compliant workflow with automated screening and quality assessment",
+      "meta": "Meta-Analysis",
+      "metaDesc": "Statistical calculations, forest plots, funnel plots, and heterogeneity analysis",
+      "sample": "Sample Size Calculator",
+      "sampleDesc": "Power analysis and sample size calculations for various study designs",
+      "proposal": "Proposal Generator",
+      "proposalDesc": "AI-assisted proposal and manuscript writing with customizable templates"
+    }
+  },
+  "search": {
+    "title": "Search Articles",
+    "placeholder": "Enter your research topic...",
+    "sources": "Data Sources",
+    "filters": "Filters",
+    "yearRange": "Year Range",
+    "articleType": "Article Type",
+    "openAccess": "Open Access Only",
+    "search": "Search",
+    "searching": "Searching...",
+    "results": "Results",
+    "noResults": "No results found",
+    "save": "Save to Library",
+    "saved": "Saved",
+    "viewAbstract": "View Abstract",
+    "citations": "Citations",
+    "authors": "Authors",
+    "journal": "Journal"
+  },
+  "library": {
+    "title": "My Library",
+    "articles": "Articles",
+    "projects": "Projects",
+    "newProject": "New Project",
+    "empty": "Your library is empty",
+    "addArticles": "Search and add articles to your library"
+  },
+  "systematic": {
+    "title": "Systematic Review",
+    "prisma": "PRISMA Workflow",
+    "identification": "Identification",
+    "screening": "Screening",
+    "eligibility": "Eligibility",
+    "included": "Included",
+    "riskOfBias": "Risk of Bias",
+    "pico": "PICO Analysis",
+    "flowDiagram": "PRISMA Flow Diagram"
+  },
+  "meta": {
+    "title": "Meta-Analysis",
+    "dataEntry": "Data Entry",
+    "calculations": "Calculations",
+    "effectSize": "Effect Size",
+    "forestPlot": "Forest Plot",
+    "funnelPlot": "Funnel Plot",
+    "heterogeneity": "Heterogeneity",
+    "sensitivity": "Sensitivity Analysis",
+    "subgroup": "Subgroup Analysis"
+  },
+  "sample": {
+    "title": "Sample Size Calculator",
+    "studyType": "Study Type",
+    "effectSize": "Expected Effect Size",
+    "power": "Power",
+    "alpha": "Significance Level",
+    "calculate": "Calculate",
+    "result": "Required Sample Size",
+    "fromLiterature": "Estimate from Literature"
+  },
+  "proposal": {
+    "title": "Proposal Writer",
+    "template": "Template",
+    "sections": "Sections",
+    "generate": "Generate",
+    "edit": "Edit",
+    "export": "Export"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "export": "Export",
+    "download": "Download",
+    "csv": "CSV",
+    "json": "JSON",
+    "ris": "RIS",
+    "pdf": "PDF",
+    "all": "All",
+    "selected": "Selected",
+    "clear": "Clear"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "delay": "API Delay (seconds)",
+    "maxArticles": "Max Articles per Search"
+  }
+}
