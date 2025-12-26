@@ -1,19 +1,21 @@
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, Brain, FileText, BarChart3, Calculator, PenTool } from 'lucide-react';
 
 const Index = () => {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const isRTL = ['fa', 'ar'].includes(i18n.language);
 
   const features = [
-    { icon: Search, title: t('home.features.search'), desc: t('home.features.searchDesc') },
-    { icon: Brain, title: t('home.features.ai'), desc: t('home.features.aiDesc') },
-    { icon: FileText, title: t('home.features.systematic'), desc: t('home.features.systematicDesc') },
-    { icon: BarChart3, title: t('home.features.meta'), desc: t('home.features.metaDesc') },
-    { icon: Calculator, title: t('home.features.sample'), desc: t('home.features.sampleDesc') },
-    { icon: PenTool, title: t('home.features.proposal'), desc: t('home.features.proposalDesc') },
+    { icon: Search, title: t('home.features.search'), desc: t('home.features.searchDesc'), path: '/search' },
+    { icon: Brain, title: t('home.features.ai'), desc: t('home.features.aiDesc'), path: '/search' },
+    { icon: FileText, title: t('home.features.systematic'), desc: t('home.features.systematicDesc'), path: '/systematic-review' },
+    { icon: BarChart3, title: t('home.features.meta'), desc: t('home.features.metaDesc'), path: '/meta-analysis' },
+    { icon: Calculator, title: t('home.features.sample'), desc: t('home.features.sampleDesc'), path: '/sample-size' },
+    { icon: PenTool, title: t('home.features.proposal'), desc: t('home.features.proposalDesc'), path: '/proposal' },
   ];
 
   return (
@@ -46,14 +48,18 @@ const Index = () => {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">{t('home.welcome')}</h2>
           <p className="text-lg md:text-xl opacity-90 max-w-3xl mx-auto mb-8">{t('home.description')}</p>
-          <Button size="lg" className="bg-secondary text-secondary-foreground">{t('home.getStarted')}</Button>
+          <Button size="lg" className="bg-secondary text-secondary-foreground" onClick={() => navigate('/search')}>{t('home.getStarted')}</Button>
         </div>
       </section>
 
       <section className="py-16 container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
-            <Card key={index} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <Card 
+              key={index} 
+              className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+              onClick={() => navigate(feature.path)}
+            >
               <CardHeader>
                 <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mb-4">
                   <feature.icon className="w-6 h-6 text-primary-foreground" />
