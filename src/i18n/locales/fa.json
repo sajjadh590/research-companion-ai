@@ -1,0 +1,130 @@
+{
+  "app": {
+    "title": "دستیار پژوهشی",
+    "subtitle": "دستیار تحقیقاتی مبتنی بر هوش مصنوعی"
+  },
+  "nav": {
+    "home": "خانه",
+    "search": "جستجوی مقالات",
+    "library": "کتابخانه من",
+    "systematic": "مرور سیستماتیک",
+    "metaAnalysis": "متاآنالیز",
+    "sampleSize": "حجم نمونه",
+    "proposal": "نویسنده پروپوزال",
+    "settings": "تنظیمات"
+  },
+  "home": {
+    "welcome": "به دستیار پژوهشی خوش آمدید",
+    "description": "دستیار هوشمند شما برای تحقیقات علمی. میلیون‌ها مقاله را جستجو کنید، گپ‌های تحقیقاتی را تحلیل کنید، مرور سیستماتیک انجام دهید و پروپوزال بنویسید.",
+    "getStarted": "شروع کنید",
+    "features": {
+      "search": "جستجوی چندمنبعی",
+      "searchDesc": "جستجوی همزمان در PubMed، OpenAlex، Semantic Scholar، arXiv و CORE",
+      "ai": "تحلیل هوشمند",
+      "aiDesc": "خلاصه‌سازی هوشمند، شناسایی گپ تحقیقاتی و استخراج PICO",
+      "systematic": "مرور سیستماتیک",
+      "systematicDesc": "فرآیند PRISMA با غربالگری خودکار و ارزیابی کیفیت",
+      "meta": "متاآنالیز",
+      "metaDesc": "محاسبات آماری، نمودار Forest، Funnel و تحلیل ناهمگنی",
+      "sample": "محاسبه حجم نمونه",
+      "sampleDesc": "تحلیل توان و محاسبه حجم نمونه برای انواع مطالعات",
+      "proposal": "تولید پروپوزال",
+      "proposalDesc": "نوشتن پروپوزال و مقاله با کمک هوش مصنوعی و قالب‌های سفارشی"
+    }
+  },
+  "search": {
+    "title": "جستجوی مقالات",
+    "placeholder": "موضوع تحقیق خود را وارد کنید...",
+    "sources": "منابع داده",
+    "filters": "فیلترها",
+    "yearRange": "بازه زمانی",
+    "articleType": "نوع مقاله",
+    "openAccess": "فقط دسترسی آزاد",
+    "search": "جستجو",
+    "searching": "در حال جستجو...",
+    "results": "نتایج",
+    "noResults": "نتیجه‌ای یافت نشد",
+    "save": "ذخیره در کتابخانه",
+    "saved": "ذخیره شد",
+    "viewAbstract": "مشاهده چکیده",
+    "citations": "استنادات",
+    "authors": "نویسندگان",
+    "journal": "ژورنال"
+  },
+  "library": {
+    "title": "کتابخانه من",
+    "articles": "مقالات",
+    "projects": "پروژه‌ها",
+    "newProject": "پروژه جدید",
+    "empty": "کتابخانه شما خالی است",
+    "addArticles": "مقالات را جستجو و به کتابخانه اضافه کنید"
+  },
+  "systematic": {
+    "title": "مرور سیستماتیک",
+    "prisma": "فرآیند PRISMA",
+    "identification": "شناسایی",
+    "screening": "غربالگری",
+    "eligibility": "واجد شرایط",
+    "included": "وارد شده",
+    "riskOfBias": "ریسک سوگیری",
+    "pico": "تحلیل PICO",
+    "flowDiagram": "نمودار PRISMA"
+  },
+  "meta": {
+    "title": "متاآنالیز",
+    "dataEntry": "ورود داده",
+    "calculations": "محاسبات",
+    "effectSize": "اندازه اثر",
+    "forestPlot": "نمودار Forest",
+    "funnelPlot": "نمودار Funnel",
+    "heterogeneity": "ناهمگنی",
+    "sensitivity": "تحلیل حساسیت",
+    "subgroup": "تحلیل زیرگروه"
+  },
+  "sample": {
+    "title": "محاسبه حجم نمونه",
+    "studyType": "نوع مطالعه",
+    "effectSize": "اندازه اثر مورد انتظار",
+    "power": "توان آماری",
+    "alpha": "سطح معناداری",
+    "calculate": "محاسبه",
+    "result": "حجم نمونه مورد نیاز",
+    "fromLiterature": "تخمین از ادبیات"
+  },
+  "proposal": {
+    "title": "نویسنده پروپوزال",
+    "template": "قالب",
+    "sections": "بخش‌ها",
+    "generate": "تولید",
+    "edit": "ویرایش",
+    "export": "خروجی"
+  },
+  "common": {
+    "loading": "در حال بارگذاری...",
+    "error": "خطایی رخ داد",
+    "retry": "تلاش مجدد",
+    "save": "ذخیره",
+    "cancel": "لغو",
+    "delete": "حذف",
+    "edit": "ویرایش",
+    "export": "خروجی",
+    "download": "دانلود",
+    "csv": "CSV",
+    "json": "JSON",
+    "ris": "RIS",
+    "pdf": "PDF",
+    "all": "همه",
+    "selected": "انتخاب شده",
+    "clear": "پاک کردن"
+  },
+  "settings": {
+    "title": "تنظیمات",
+    "language": "زبان",
+    "theme": "تم",
+    "light": "روشن",
+    "dark": "تاریک",
+    "system": "سیستم",
+    "delay": "تأخیر API (ثانیه)",
+    "maxArticles": "حداکثر مقالات در هر جستجو"
+  }
+}

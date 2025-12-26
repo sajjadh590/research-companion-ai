@@ -1,0 +1,130 @@
+{
+  "app": {
+    "title": "مساعد البحث",
+    "subtitle": "مساعد بحثي مدعوم بالذكاء الاصطناعي"
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "search": "بحث المقالات",
+    "library": "مكتبتي",
+    "systematic": "المراجعة المنهجية",
+    "metaAnalysis": "التحليل التلوي",
+    "sampleSize": "حجم العينة",
+    "proposal": "كاتب المقترحات",
+    "settings": "الإعدادات"
+  },
+  "home": {
+    "welcome": "مرحباً بك في مساعد البحث",
+    "description": "مساعدك الذكي للبحث الأكاديمي. ابحث في ملايين المقالات، حلل الفجوات البحثية، أجرِ المراجعات المنهجية، واكتب المقترحات.",
+    "getStarted": "ابدأ الآن",
+    "features": {
+      "search": "بحث متعدد المصادر",
+      "searchDesc": "بحث متزامن في PubMed وOpenAlex وSemantic Scholar وarXiv وCORE",
+      "ai": "تحليل ذكي",
+      "aiDesc": "تلخيص ذكي، تحديد الفجوات البحثية، واستخراج PICO",
+      "systematic": "المراجعة المنهجية",
+      "systematicDesc": "سير عمل PRISMA مع فحص آلي وتقييم الجودة",
+      "meta": "التحليل التلوي",
+      "metaDesc": "حسابات إحصائية، مخطط الغابة، مخطط القمع، وتحليل التباين",
+      "sample": "حاسبة حجم العينة",
+      "sampleDesc": "تحليل القوة وحساب حجم العينة لأنواع الدراسات المختلفة",
+      "proposal": "مولد المقترحات",
+      "proposalDesc": "كتابة المقترحات والمخطوطات بمساعدة الذكاء الاصطناعي"
+    }
+  },
+  "search": {
+    "title": "بحث المقالات",
+    "placeholder": "أدخل موضوع البحث...",
+    "sources": "مصادر البيانات",
+    "filters": "الفلاتر",
+    "yearRange": "نطاق السنوات",
+    "articleType": "نوع المقالة",
+    "openAccess": "الوصول المفتوح فقط",
+    "search": "بحث",
+    "searching": "جارٍ البحث...",
+    "results": "النتائج",
+    "noResults": "لم يتم العثور على نتائج",
+    "save": "حفظ في المكتبة",
+    "saved": "تم الحفظ",
+    "viewAbstract": "عرض الملخص",
+    "citations": "الاستشهادات",
+    "authors": "المؤلفون",
+    "journal": "المجلة"
+  },
+  "library": {
+    "title": "مكتبتي",
+    "articles": "المقالات",
+    "projects": "المشاريع",
+    "newProject": "مشروع جديد",
+    "empty": "مكتبتك فارغة",
+    "addArticles": "ابحث وأضف مقالات إلى مكتبتك"
+  },
+  "systematic": {
+    "title": "المراجعة المنهجية",
+    "prisma": "سير عمل PRISMA",
+    "identification": "التعريف",
+    "screening": "الفحص",
+    "eligibility": "الأهلية",
+    "included": "المضمنة",
+    "riskOfBias": "خطر التحيز",
+    "pico": "تحليل PICO",
+    "flowDiagram": "مخطط PRISMA"
+  },
+  "meta": {
+    "title": "التحليل التلوي",
+    "dataEntry": "إدخال البيانات",
+    "calculations": "الحسابات",
+    "effectSize": "حجم التأثير",
+    "forestPlot": "مخطط الغابة",
+    "funnelPlot": "مخطط القمع",
+    "heterogeneity": "التباين",
+    "sensitivity": "تحليل الحساسية",
+    "subgroup": "تحليل المجموعات الفرعية"
+  },
+  "sample": {
+    "title": "حاسبة حجم العينة",
+    "studyType": "نوع الدراسة",
+    "effectSize": "حجم التأثير المتوقع",
+    "power": "القوة",
+    "alpha": "مستوى الدلالة",
+    "calculate": "حساب",
+    "result": "حجم العينة المطلوب",
+    "fromLiterature": "تقدير من الأدبيات"
+  },
+  "proposal": {
+    "title": "كاتب المقترحات",
+    "template": "القالب",
+    "sections": "الأقسام",
+    "generate": "توليد",
+    "edit": "تحرير",
+    "export": "تصدير"
+  },
+  "common": {
+    "loading": "جارٍ التحميل...",
+    "error": "حدث خطأ",
+    "retry": "إعادة المحاولة",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تحرير",
+    "export": "تصدير",
+    "download": "تنزيل",
+    "csv": "CSV",
+    "json": "JSON",
+    "ris": "RIS",
+    "pdf": "PDF",
+    "all": "الكل",
+    "selected": "المحدد",
+    "clear": "مسح"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "language": "اللغة",
+    "theme": "المظهر",
+    "light": "فاتح",
+    "dark": "داكن",
+    "system": "النظام",
+    "delay": "تأخير API (ثانية)",
+    "maxArticles": "الحد الأقصى للمقالات لكل بحث"
+  }
+}
