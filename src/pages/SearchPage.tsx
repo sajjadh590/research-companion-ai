@@ -71,7 +71,7 @@ export default function SearchPage() {
     }
   };
 
-  const handleAnalyze = async (type: 'summarize' | 'research_gaps' | 'pico' | 'key_findings') => {
+  const handleAnalyze = async (type: 'summarize' | 'unified_summary' | 'research_gaps' | 'pico' | 'key_findings') => {
     const selected = articles.filter(a => selectedArticles.has(a.id));
     if (selected.length === 0) {
       toast({ title: 'Error', description: 'Please select articles to analyze', variant: 'destructive' });
@@ -275,7 +275,16 @@ export default function SearchPage() {
                   disabled={isAnalyzing || selectedArticles.size === 0}
                 >
                   <Brain className="w-4 h-4 mr-1" />
-                  {isAnalyzing ? 'Analyzing...' : 'Summarize'}
+                  {isAnalyzing ? 'Analyzing...' : 'Individual Summaries'}
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => handleAnalyze('unified_summary')}
+                  disabled={isAnalyzing || selectedArticles.size === 0}
+                >
+                  <Brain className="w-4 h-4 mr-1" />
+                  Unified Synthesis
                 </Button>
                 <Button
                   variant="secondary"

@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
 interface AnalyzeRequest {
-  type: 'summarize' | 'research_gaps' | 'pico' | 'risk_of_bias' | 'key_findings';
+  type: 'summarize' | 'unified_summary' | 'research_gaps' | 'pico' | 'risk_of_bias' | 'key_findings';
   articles: { title: string; abstract: string; authors?: string }[];
   language?: string;
 }
@@ -34,18 +34,34 @@ serve(async (req) => {
     const langInstruction = languageInstructions[language as keyof typeof languageInstructions] || languageInstructions.en;
 
     const prompts: Record<string, string> = {
-      summarize: `You are a research assistant. Analyze these academic articles and provide a comprehensive summary.
+      summarize: `You are a research assistant. Provide a brief summary for EACH of these academic articles separately.
 
 ${langInstruction}
 
 Articles:
 ${articles.map((a, i) => `${i + 1}. Title: ${a.title}\nAbstract: ${a.abstract}`).join('\n\n')}
 
-Provide:
-1. A unified summary of the main themes and findings
-2. Key methodologies used
-3. Common conclusions across studies
-4. Areas of agreement and disagreement`,
+For each article, provide:
+- A 2-3 sentence summary of the main findings
+- The key methodology used
+- The main conclusion`,
+
+      unified_summary: `You are a research synthesis expert. Analyze ALL these academic articles TOGETHER and provide ONE comprehensive, unified synthesis.
+
+${langInstruction}
+
+Articles:
+${articles.map((a, i) => `${i + 1}. Title: ${a.title}\nAbstract: ${a.abstract}`).join('\n\n')}
+
+Provide a UNIFIED analysis that:
+1. Identifies the overarching themes and patterns across ALL studies
+2. Synthesizes the collective findings into a coherent narrative
+3. Highlights areas of consensus and divergence between studies
+4. Summarizes the combined methodological approaches
+5. Draws integrated conclusions based on the entire body of evidence
+6. Identifies the overall contribution to the field
+
+Do NOT summarize each article separately. Instead, weave them together into one cohesive synthesis.`,
 
       research_gaps: `You are a research methodology expert. Analyze these articles to identify research gaps.
 
