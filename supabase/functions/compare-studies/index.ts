@@ -16,29 +16,7 @@ serve(async (req) => {
   }
 
   try {
-    // Verify authentication
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
+    // Public endpoint - no authentication required
     const { articles, language = 'en' }: CompareRequest = await req.json();
 
     // Input validation
@@ -94,7 +72,7 @@ For EACH study, extract the following in a structured JSON format:
 
 Return ONLY a valid JSON array with objects for each study.`;
 
-    console.log(`User ${user.id} comparing ${articles.length} studies`);
+    console.log(`Comparing ${articles.length} studies`);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',

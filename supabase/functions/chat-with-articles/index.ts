@@ -18,29 +18,7 @@ serve(async (req) => {
   }
 
   try {
-    // Verify authentication
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
+    // Public endpoint - no authentication required
     const { question, articles, history = [], language = 'en' }: ChatRequest = await req.json();
 
     // Input validation
@@ -118,7 +96,7 @@ Keep responses concise but informative. Use the article numbers in brackets when
       { role: 'user', content: question }
     ];
 
-    console.log(`User ${user.id} chat with ${articles.length} articles`);
+    console.log(`Chat with ${articles.length} articles`);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
