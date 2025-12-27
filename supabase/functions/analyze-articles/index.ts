@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, createErrorResponse } from "../_shared/utils.ts";
+import { API_CONFIG, callAI } from "../_shared/config.ts";
 
 interface AnalyzeRequest {
   type: 'summarize' | 'unified_summary' | 'research_gaps' | 'pico' | 'risk_of_bias' | 'key_findings';
@@ -42,10 +42,9 @@ serve(async (req) => {
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    
-    if (!LOVABLE_API_KEY) {
-      console.error('LOVABLE_API_KEY not configured');
+    // Check if AI is configured (supports multiple providers)
+    if (!API_CONFIG.ai.isConfigured) {
+      console.error(`AI provider (${API_CONFIG.ai.provider}) not configured`);
       return new Response(JSON.stringify({ error: 'Service temporarily unavailable' }), {
         status: 503,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -152,45 +151,22 @@ For each article, extract:
 
     const prompt = prompts[type];
 
-    console.log(`Analyzing ${articles.length} articles with type: ${type}`);
+    console.log(`Analyzing ${articles.length} articles with type: ${type} using ${API_CONFIG.ai.provider}`);
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: 'You are an expert academic research assistant with deep knowledge of systematic reviews, meta-analyses, and research methodology.' },
-          { role: 'user', content: prompt }
-        ],
-      }),
-    });
+    // Use centralized AI caller (supports Lovable, OpenAI, Anthropic)
+    const { content: result, error } = await callAI([
+      { role: 'system', content: 'You are an expert academic research assistant with deep knowledge of systematic reviews, meta-analyses, and research methodology.' },
+      { role: 'user', content: prompt }
+    ]);
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }), {
-          status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: 'Service quota exceeded. Please try again later.' }), {
-          status: 402,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      console.error('AI gateway error:', response.status);
-      return new Response(JSON.stringify({ error: 'Analysis failed. Please try again.' }), {
-        status: 500,
+    if (error) {
+      console.error('AI analysis error:', error);
+      const status = error.includes('Rate limit') ? 429 : error.includes('quota') ? 402 : 500;
+      return new Response(JSON.stringify({ error }), {
+        status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-
-    const data = await response.json();
-    const result = data.choices?.[0]?.message?.content || '';
 
     console.log('Analysis completed successfully');
 

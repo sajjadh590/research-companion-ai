@@ -160,6 +160,52 @@ Research Copilot یک پلتفرم جامع تحقیقاتی است که به م
 
 ---
 
+## 🔧 تنظیمات API Key ها (اختیاری)
+
+این پروژه به صورت پیش‌فرض بدون نیاز به هیچ API Key کار می‌کند. اما برای افزایش Rate Limit یا تغییر Provider AI می‌توانید API Key های زیر را اضافه کنید:
+
+### متغیرهای محیطی (Supabase Secrets)
+
+```bash
+# ========== جستجوی مقالات ==========
+
+# PubMed (افزایش rate limit از 3 به 10 req/sec)
+PUBMED_API_KEY=<your-key>
+PUBMED_EMAIL=<your-email>
+
+# Semantic Scholar (rate limit پایدار 1 req/sec)
+SEMANTIC_SCHOLAR_API_KEY=<your-key>
+
+# OpenAlex (دسترسی به polite pool سریعتر)
+OPENALEX_EMAIL=<your-email>
+
+# ========== هوش مصنوعی ==========
+
+# تغییر Provider (پیش‌فرض: lovable)
+AI_PROVIDER=lovable  # گزینه‌ها: lovable | openai | anthropic
+
+# اگر OpenAI انتخاب شد:
+OPENAI_API_KEY=<your-key>
+
+# اگر Anthropic انتخاب شد:
+ANTHROPIC_API_KEY=<your-key>
+```
+
+### نحوه افزودن API Key
+
+1. به Settings پروژه بروید
+2. در بخش Cloud → Secrets کلیک کنید
+3. نام و مقدار Secret را وارد کنید
+4. ذخیره کنید
+
+### مزایای افزودن API Key
+
+| API | بدون Key | با Key |
+|-----|----------|--------|
+| PubMed | 3 req/sec | 10 req/sec |
+| Semantic Scholar | 100 req/5min | 60 req/min (پایدار) |
+| OpenAlex | 100K req/day | Polite Pool (سریعتر) |
+
 ## 🛠️ تکنولوژی‌ها
 
 ### Frontend

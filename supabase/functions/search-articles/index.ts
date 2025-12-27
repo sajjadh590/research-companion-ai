@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, createErrorResponse } from "../_shared/utils.ts";
+import { API_CONFIG, buildPubMedUrl, getSemanticScholarHeaders, getOpenAlexHeaders } from "../_shared/config.ts";
 
 interface SearchParams {
   query: string;
@@ -27,7 +27,7 @@ interface Article {
   isOpenAccess: boolean;
 }
 
-// Search PubMed
+// Search PubMed (uses API key if configured for 10 req/sec instead of 3)
 async function searchPubMed(query: string, maxResults: number, yearFrom?: number, yearTo?: number): Promise<Article[]> {
   try {
     let searchQuery = query;
@@ -35,14 +35,27 @@ async function searchPubMed(query: string, maxResults: number, yearFrom?: number
       searchQuery += ` AND ${yearFrom}:${yearTo}[dp]`;
     }
     
-    const searchUrl = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=${encodeURIComponent(searchQuery)}&retmax=${maxResults}&retmode=json`;
+    // Build URL with optional API key for higher rate limits
+    const searchUrl = buildPubMedUrl('esearch.fcgi', {
+      db: 'pubmed',
+      term: searchQuery,
+      retmax: maxResults.toString(),
+      retmode: 'json',
+    });
+    
     const searchRes = await fetch(searchUrl);
     const searchData = await searchRes.json();
     
     const ids = searchData.esearchresult?.idlist || [];
     if (ids.length === 0) return [];
     
-    const fetchUrl = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=${ids.join(',')}&retmode=xml`;
+    // Build fetch URL with optional API key
+    const fetchUrl = buildPubMedUrl('efetch.fcgi', {
+      db: 'pubmed',
+      id: ids.join(','),
+      retmode: 'xml',
+    });
+    
     const fetchRes = await fetch(fetchUrl);
     const xmlText = await fetchRes.text();
     
@@ -88,10 +101,10 @@ async function searchPubMed(query: string, maxResults: number, yearFrom?: number
   }
 }
 
-// Search OpenAlex
+// Search OpenAlex (uses configured email for polite pool access)
 async function searchOpenAlex(query: string, maxResults: number, yearFrom?: number, yearTo?: number, openAccessOnly?: boolean): Promise<Article[]> {
   try {
-    let url = `https://api.openalex.org/works?search=${encodeURIComponent(query)}&per_page=${maxResults}`;
+    let url = `${API_CONFIG.openAlex.baseUrl}/works?search=${encodeURIComponent(query)}&per_page=${maxResults}`;
     
     const filters: string[] = [];
     if (yearFrom) filters.push(`from_publication_date:${yearFrom}-01-01`);
@@ -103,7 +116,7 @@ async function searchOpenAlex(query: string, maxResults: number, yearFrom?: numb
     }
     
     const res = await fetch(url, {
-      headers: { 'User-Agent': 'ResearchCopilot/1.0 (mailto:research@example.com)' }
+      headers: getOpenAlexHeaders()
     });
     const data = await res.json();
     
@@ -140,10 +153,10 @@ function reconstructAbstract(invertedIndex: Record<string, number[]>): string {
   return words.map(w => w[1]).join(' ');
 }
 
-// Search Semantic Scholar
+// Search Semantic Scholar (uses API key if configured for stable rate limits)
 async function searchSemanticScholar(query: string, maxResults: number, yearFrom?: number, yearTo?: number, openAccessOnly?: boolean): Promise<Article[]> {
   try {
-    let url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=${Math.min(maxResults, 100)}&fields=paperId,title,abstract,authors,year,venue,citationCount,openAccessPdf,externalIds`;
+    let url = `${API_CONFIG.semanticScholar.baseUrl}/paper/search?query=${encodeURIComponent(query)}&limit=${Math.min(maxResults, 100)}&fields=paperId,title,abstract,authors,year,venue,citationCount,openAccessPdf,externalIds`;
     
     if (yearFrom && yearTo) {
       url += `&year=${yearFrom}-${yearTo}`;
@@ -152,7 +165,10 @@ async function searchSemanticScholar(query: string, maxResults: number, yearFrom
       url += `&openAccessPdf`;
     }
     
-    const res = await fetch(url);
+    // Use API key headers if configured
+    const res = await fetch(url, {
+      headers: getSemanticScholarHeaders()
+    });
     const data = await res.json();
     
     return (data.data || []).map((paper: any) => ({
@@ -176,10 +192,10 @@ async function searchSemanticScholar(query: string, maxResults: number, yearFrom
   }
 }
 
-// Search arXiv
+// Search arXiv (no API key available)
 async function searchArxiv(query: string, maxResults: number): Promise<Article[]> {
   try {
-    const url = `http://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(query)}&start=0&max_results=${maxResults}`;
+    const url = `${API_CONFIG.arxiv.baseUrl}/query?search_query=all:${encodeURIComponent(query)}&start=0&max_results=${maxResults}`;
     const res = await fetch(url);
     const xmlText = await res.text();
     
