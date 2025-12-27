@@ -244,29 +244,7 @@ serve(async (req) => {
   }
 
   try {
-    // Verify authentication
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
+    // Search is public - no authentication required for basic search
     const { query, sources, yearFrom, yearTo, maxResults = 20, openAccessOnly = false }: SearchParams = await req.json();
     
     // Input validation
@@ -300,7 +278,7 @@ serve(async (req) => {
       });
     }
 
-    console.log(`User ${user.id} searching for: "${query}" in sources: ${filteredSources.join(', ')}`);
+    console.log(`Searching for: "${query}" in sources: ${filteredSources.join(', ')}`);
     
     const perSource = Math.ceil(Math.min(maxResults, 100) / filteredSources.length);
     const searchPromises: Promise<Article[]>[] = [];
