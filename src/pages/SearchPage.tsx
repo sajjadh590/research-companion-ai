@@ -13,6 +13,7 @@ import { SaveToLibraryDialog } from '@/components/SaveToLibraryDialog';
 import { ArticleChatDialog } from '@/components/ArticleChatDialog';
 import { CitationGeneratorDialog } from '@/components/CitationGeneratorDialog';
 import { StudyComparisonDialog } from '@/components/StudyComparisonDialog';
+import { ArticleSourceBadge } from '@/components/ArticleSourceBadge';
 import type { Article } from '@/types/research';
 import { useToast } from '@/hooks/use-toast';
 
@@ -364,14 +365,7 @@ export default function SearchPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-4">
                           <h4 className="font-medium text-foreground leading-tight">{article.title}</h4>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <Badge variant="outline" className="text-xs">
-                              {article.source}
-                            </Badge>
-                            {article.isOpenAccess && (
-                              <Badge className="bg-success text-success-foreground text-xs">OA</Badge>
-                            )}
-                          </div>
+                          <ArticleSourceBadge article={article} size="sm" />
                         </div>
                         <p className="text-sm text-muted-foreground mt-1">
                           {article.authors.slice(0, 3).map(a => a.name).join(', ')}
