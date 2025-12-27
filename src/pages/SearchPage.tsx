@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
-import { Search, Loader2, BookOpen, ExternalLink, Download, Brain } from 'lucide-react';
+import { Search, Loader2, BookOpen, ExternalLink, Download, Brain, Send } from 'lucide-react';
 import { searchArticles, analyzeArticles } from '@/lib/api';
 import { Layout } from '@/components/Layout';
 import { SaveToLibraryDialog } from '@/components/SaveToLibraryDialog';
@@ -14,6 +14,7 @@ import { ArticleChatDialog } from '@/components/ArticleChatDialog';
 import { CitationGeneratorDialog } from '@/components/CitationGeneratorDialog';
 import { StudyComparisonDialog } from '@/components/StudyComparisonDialog';
 import { ArticleSourceBadge } from '@/components/ArticleSourceBadge';
+import { useSelectedArticles } from '@/hooks/useSelectedArticles';
 import type { Article } from '@/types/research';
 import { useToast } from '@/hooks/use-toast';
 
@@ -27,6 +28,7 @@ const sources = [
 export default function SearchPage() {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const { addArticles: addToGlobalSelection, count: globalCount } = useSelectedArticles();
   
   const [query, setQuery] = useState('');
   const [selectedSources, setSelectedSources] = useState(['pubmed', 'openalex']);
@@ -159,6 +161,19 @@ export default function SearchPage() {
     }
   };
 
+  const sendToOtherPages = () => {
+    const selected = articles.filter(a => selectedArticles.has(a.id));
+    if (selected.length === 0) {
+      toast({ title: 'Error', description: t('search.selectArticlesFirst'), variant: 'destructive' });
+      return;
+    }
+    addToGlobalSelection(selected);
+    toast({ 
+      title: t('search.articlesSent'), 
+      description: `${selected.length} ${t('search.articlesAddedToWorkspace')}`,
+    });
+  };
+
   return (
     <Layout>
       <div className="max-w-7xl mx-auto space-y-6">
@@ -256,9 +271,19 @@ export default function SearchPage() {
                   <CardTitle>{t('search.results')} ({articles.length})</CardTitle>
                   <CardDescription>{selectedArticles.size} selected</CardDescription>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button variant="outline" size="sm" onClick={selectAll}>
                     {selectedArticles.size === articles.length ? t('search.deselectAll') : t('search.selectAll')}
+                  </Button>
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    onClick={sendToOtherPages}
+                    disabled={selectedArticles.size === 0}
+                    className="gap-1"
+                  >
+                    <Send className="w-4 h-4" />
+                    {t('search.sendToWorkspace')} {globalCount > 0 && `(${globalCount})`}
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => exportResults('csv')} className="gap-1">
                     <Download className="w-4 h-4" /> CSV
