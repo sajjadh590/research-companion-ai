@@ -1,10 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, createErrorResponse } from "../_shared/utils.ts";
 
 interface SearchParams {
   query: string;
@@ -229,7 +225,6 @@ function deduplicateArticles(articles: Article[]): Article[] {
     if (!seen.has(key)) {
       seen.set(key, article);
     } else {
-      // Keep the one with more info (citations, pdf)
       const existing = seen.get(key)!;
       if ((article.citationsCount > existing.citationsCount) || (article.pdfUrl && !existing.pdfUrl)) {
         seen.set(key, { ...existing, ...article, citationsCount: Math.max(article.citationsCount, existing.citationsCount) });
@@ -241,6 +236,9 @@ function deduplicateArticles(articles: Article[]): Article[] {
 }
 
 serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -249,7 +247,6 @@ serve(async (req) => {
     // Verify authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      console.error('No authorization header provided');
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -264,7 +261,6 @@ serve(async (req) => {
 
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     if (authError || !user) {
-      console.error('Auth error:', authError?.message);
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -275,14 +271,14 @@ serve(async (req) => {
     
     // Input validation
     if (!query || typeof query !== 'string') {
-      return new Response(JSON.stringify({ error: 'Query is required and must be a string' }), {
+      return new Response(JSON.stringify({ error: 'Query is required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     if (query.length > 500) {
-      return new Response(JSON.stringify({ error: 'Query too long (max 500 characters)' }), {
+      return new Response(JSON.stringify({ error: 'Query too long' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -298,7 +294,7 @@ serve(async (req) => {
     const validSources = ['pubmed', 'openalex', 'semantic_scholar', 'arxiv'];
     const filteredSources = sources.filter(s => validSources.includes(s));
     if (filteredSources.length === 0) {
-      return new Response(JSON.stringify({ error: 'Invalid sources provided' }), {
+      return new Response(JSON.stringify({ error: 'Invalid sources' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -326,7 +322,6 @@ serve(async (req) => {
     const allArticles = results.flat();
     const dedupedArticles = deduplicateArticles(allArticles);
     
-    // Sort by citations
     dedupedArticles.sort((a, b) => b.citationsCount - a.citationsCount);
     
     console.log(`Found ${dedupedArticles.length} unique articles`);
@@ -335,10 +330,6 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Search error:', error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return createErrorResponse(corsHeaders, error, 'Search failed. Please try again.');
   }
 });
