@@ -1,16 +1,16 @@
 project_id = "rxmsfkblfouwlfgkkndr"
 
 [functions.search-articles]
-verify_jwt = false
+verify_jwt = true
 
 [functions.analyze-articles]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-proposal]
-verify_jwt = false
+verify_jwt = true
 
 [functions.chat-with-articles]
-verify_jwt = false
+verify_jwt = true
 
 [functions.compare-studies]
-verify_jwt = false
+verify_jwt = true

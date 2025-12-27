@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,21 +18,69 @@ serve(async (req) => {
   }
 
   try {
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('No authorization header provided');
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) {
+      console.error('Auth error:', authError?.message);
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { type, articles, language = 'en' }: AnalyzeRequest = await req.json();
+
+    // Input validation
+    if (!type || !['summarize', 'unified_summary', 'research_gaps', 'pico', 'risk_of_bias', 'key_findings'].includes(type)) {
+      return new Response(JSON.stringify({ error: 'Invalid analysis type' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!Array.isArray(articles) || articles.length === 0) {
+      return new Response(JSON.stringify({ error: 'At least one article is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (articles.length > 50) {
+      return new Response(JSON.stringify({ error: 'Maximum 50 articles allowed' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    const languageInstructions = {
+    const languageInstructions: Record<string, string> = {
       en: 'Respond in English.',
       fa: 'Respond in Persian (Farsi).',
       ar: 'Respond in Arabic.',
       tr: 'Respond in Turkish.',
     };
 
-    const langInstruction = languageInstructions[language as keyof typeof languageInstructions] || languageInstructions.en;
+    const langInstruction = languageInstructions[language] || languageInstructions.en;
 
     const prompts: Record<string, string> = {
       summarize: `You are a research assistant. Provide a brief summary for EACH of these academic articles separately.
@@ -123,14 +172,8 @@ For each article, extract:
     };
 
     const prompt = prompts[type];
-    if (!prompt) {
-      return new Response(JSON.stringify({ error: 'Invalid analysis type' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
 
-    console.log(`Analyzing ${articles.length} articles with type: ${type}`);
+    console.log(`User ${user.id} analyzing ${articles.length} articles with type: ${type}`);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',

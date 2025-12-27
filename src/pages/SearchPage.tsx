@@ -178,9 +178,9 @@ export default function SearchPage() {
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 className="flex-1"
               />
-              <Button onClick={handleSearch} disabled={isSearching}>
+              <Button onClick={handleSearch} disabled={isSearching} className="gap-2">
                 {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-                <span className="ml-2">{t('search.search')}</span>
+                <span>{t('search.search')}</span>
               </Button>
             </div>
 
@@ -225,7 +225,7 @@ export default function SearchPage() {
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">
-                  Max Results: {maxResults}
+                  {t('search.maxResults')}: {maxResults}
                 </label>
                 <Slider
                   value={[maxResults]}
@@ -259,11 +259,11 @@ export default function SearchPage() {
                   <Button variant="outline" size="sm" onClick={selectAll}>
                     {selectedArticles.size === articles.length ? t('search.deselectAll') : t('search.selectAll')}
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => exportResults('csv')}>
-                    <Download className="w-4 h-4 mr-1" /> CSV
+                  <Button variant="outline" size="sm" onClick={() => exportResults('csv')} className="gap-1">
+                    <Download className="w-4 h-4" /> CSV
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => exportResults('json')}>
-                    <Download className="w-4 h-4 mr-1" /> JSON
+                  <Button variant="outline" size="sm" onClick={() => exportResults('json')} className="gap-1">
+                    <Download className="w-4 h-4" /> JSON
                   </Button>
                 </div>
               </div>
@@ -276,8 +276,9 @@ export default function SearchPage() {
                   size="sm"
                   onClick={() => handleAnalyze('summarize')}
                   disabled={isAnalyzing || selectedArticles.size === 0}
+                  className="gap-1"
                 >
-                  <Brain className="w-4 h-4 mr-1" />
+                  <Brain className="w-4 h-4" />
                   {isAnalyzing ? t('search.analyzing') : t('search.individualSummaries')}
                 </Button>
                 <Button
@@ -285,8 +286,9 @@ export default function SearchPage() {
                   size="sm"
                   onClick={() => handleAnalyze('unified_summary')}
                   disabled={isAnalyzing || selectedArticles.size === 0}
+                  className="gap-1"
                 >
-                  <Brain className="w-4 h-4 mr-1" />
+                  <Brain className="w-4 h-4" />
                   {t('search.unifiedSynthesis')}
                 </Button>
                 <Button
@@ -334,7 +336,7 @@ export default function SearchPage() {
                 <div className="p-4 rounded-lg bg-muted/50 border border-border">
                   <h4 className="font-medium mb-2 flex items-center gap-2">
                     <Brain className="w-4 h-4 text-primary" />
-                    AI Analysis
+                    {t('search.aiAnalysis')}
                   </h4>
                   <div className="prose prose-sm max-w-none text-foreground whitespace-pre-wrap">
                     {analysisResult}
@@ -375,13 +377,13 @@ export default function SearchPage() {
                           {article.authors.slice(0, 3).map(a => a.name).join(', ')}
                           {article.authors.length > 3 && ' et al.'}
                         </p>
-                        <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-muted-foreground">
                           <span>{article.journal}</span>
                           <span>{article.publicationDate}</span>
                           {article.citationsCount > 0 && (
                             <span className="flex items-center gap-1">
                               <BookOpen className="w-3 h-3" />
-                              {article.citationsCount} citations
+                              {article.citationsCount} {t('search.citations')}
                             </span>
                           )}
                         </div>
@@ -390,18 +392,18 @@ export default function SearchPage() {
                             {article.abstract}
                           </p>
                         )}
-                        <div className="flex items-center gap-2 mt-3">
+                        <div className="flex flex-wrap items-center gap-2 mt-3">
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => setExpandedAbstract(expandedAbstract === article.id ? null : article.id)}
                           >
-                            {expandedAbstract === article.id ? 'Hide Abstract' : 'View Abstract'}
+                            {expandedAbstract === article.id ? t('search.hideAbstract') : t('search.viewAbstract')}
                           </Button>
-                          <Button variant="ghost" size="sm" asChild>
+                          <Button variant="ghost" size="sm" asChild className="gap-1">
                             <a href={article.url} target="_blank" rel="noopener noreferrer">
-                              <ExternalLink className="w-3 h-3 mr-1" />
-                              View
+                              <ExternalLink className="w-3 h-3" />
+                              {t('search.view')}
                             </a>
                           </Button>
                           {article.pdfUrl && (

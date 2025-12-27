@@ -98,19 +98,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {user ? (
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full gap-2"
                 onClick={handleSignOut}
               >
-                <LogOut className="w-4 h-4 mr-2" />
+                <LogOut className="w-4 h-4" />
                 {t('auth.logout')}
               </Button>
             ) : (
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full gap-2"
                 onClick={() => navigate('/auth')}
               >
-                <LogIn className="w-4 h-4 mr-2" />
+                <LogIn className="w-4 h-4" />
                 {t('auth.login')}
               </Button>
             )}
@@ -173,19 +173,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
               {user ? (
                 <Button
                   variant="outline"
-                  className="w-full"
+                  className="w-full gap-2"
                   onClick={handleSignOut}
                 >
-                  <LogOut className="w-4 h-4 mr-2" />
+                  <LogOut className="w-4 h-4" />
                   {t('auth.logout')}
                 </Button>
               ) : (
                 <Button
                   variant="outline"
-                  className="w-full"
+                  className="w-full gap-2"
                   onClick={() => navigate('/auth')}
                 >
-                  <LogIn className="w-4 h-4 mr-2" />
+                  <LogIn className="w-4 h-4" />
                   {t('auth.login')}
                 </Button>
               )}
