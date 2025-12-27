@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -245,30 +246,79 @@ serve(async (req) => {
   }
 
   try {
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('No authorization header provided');
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) {
+      console.error('Auth error:', authError?.message);
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { query, sources, yearFrom, yearTo, maxResults = 20, openAccessOnly = false }: SearchParams = await req.json();
     
-    if (!query) {
-      return new Response(JSON.stringify({ error: 'Query is required' }), {
+    // Input validation
+    if (!query || typeof query !== 'string') {
+      return new Response(JSON.stringify({ error: 'Query is required and must be a string' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log(`Searching for: "${query}" in sources: ${sources.join(', ')}`);
+    if (query.length > 500) {
+      return new Response(JSON.stringify({ error: 'Query too long (max 500 characters)' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!Array.isArray(sources) || sources.length === 0) {
+      return new Response(JSON.stringify({ error: 'At least one source is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const validSources = ['pubmed', 'openalex', 'semantic_scholar', 'arxiv'];
+    const filteredSources = sources.filter(s => validSources.includes(s));
+    if (filteredSources.length === 0) {
+      return new Response(JSON.stringify({ error: 'Invalid sources provided' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log(`User ${user.id} searching for: "${query}" in sources: ${filteredSources.join(', ')}`);
     
-    const perSource = Math.ceil(maxResults / sources.length);
+    const perSource = Math.ceil(Math.min(maxResults, 100) / filteredSources.length);
     const searchPromises: Promise<Article[]>[] = [];
     
-    if (sources.includes('pubmed')) {
+    if (filteredSources.includes('pubmed')) {
       searchPromises.push(searchPubMed(query, perSource, yearFrom, yearTo));
     }
-    if (sources.includes('openalex')) {
+    if (filteredSources.includes('openalex')) {
       searchPromises.push(searchOpenAlex(query, perSource, yearFrom, yearTo, openAccessOnly));
     }
-    if (sources.includes('semantic_scholar')) {
+    if (filteredSources.includes('semantic_scholar')) {
       searchPromises.push(searchSemanticScholar(query, perSource, yearFrom, yearTo, openAccessOnly));
     }
-    if (sources.includes('arxiv')) {
+    if (filteredSources.includes('arxiv')) {
       searchPromises.push(searchArxiv(query, perSource));
     }
     
@@ -281,7 +331,7 @@ serve(async (req) => {
     
     console.log(`Found ${dedupedArticles.length} unique articles`);
     
-    return new Response(JSON.stringify({ articles: dedupedArticles.slice(0, maxResults) }), {
+    return new Response(JSON.stringify({ articles: dedupedArticles.slice(0, Math.min(maxResults, 100)) }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {

@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,30 +21,87 @@ serve(async (req) => {
   }
 
   try {
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('No authorization header provided');
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) {
+      console.error('Auth error:', authError?.message);
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { topic, researchQuestions, articles, section, language = 'en', previousSections = {} }: ProposalRequest = await req.json();
+
+    // Input validation
+    if (!topic || typeof topic !== 'string') {
+      return new Response(JSON.stringify({ error: 'Topic is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (topic.length > 500) {
+      return new Response(JSON.stringify({ error: 'Topic too long (max 500 characters)' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const validSections = ['introduction', 'literature_review', 'methodology', 'objectives', 'timeline', 'references', 'full'];
+    if (!section || !validSections.includes(section)) {
+      return new Response(JSON.stringify({ error: 'Invalid section type' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (articles && articles.length > 30) {
+      return new Response(JSON.stringify({ error: 'Maximum 30 articles allowed' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    const languageInstructions = {
+    const languageInstructions: Record<string, string> = {
       en: 'Write in formal academic English.',
       fa: 'Write in formal academic Persian (Farsi).',
       ar: 'Write in formal academic Arabic.',
       tr: 'Write in formal academic Turkish.',
     };
 
-    const langInstruction = languageInstructions[language as keyof typeof languageInstructions] || languageInstructions.en;
+    const langInstruction = languageInstructions[language] || languageInstructions.en;
 
-    const articlesSummary = articles.slice(0, 10).map((a, i) => `${i + 1}. ${a.title}`).join('\n');
+    const articlesSummary = (articles || []).slice(0, 10).map((a, i) => `${i + 1}. ${a.title}`).join('\n');
+    const questionsFormatted = (researchQuestions || []).map((q, i) => `${i + 1}. ${q}`).join('\n');
 
     const sectionPrompts: Record<string, string> = {
       introduction: `Write the Introduction section for a research proposal.
 
 Topic: ${topic}
 Research Questions:
-${researchQuestions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
+${questionsFormatted}
 
 Key Literature:
 ${articlesSummary}
@@ -65,7 +123,7 @@ Topic: ${topic}
 Previous sections context: ${JSON.stringify(previousSections)}
 
 Relevant articles to cite:
-${articles.map((a, i) => `${i + 1}. Title: ${a.title}\nAbstract: ${a.abstract}`).join('\n\n')}
+${(articles || []).map((a, i) => `${i + 1}. Title: ${a.title}\nAbstract: ${a.abstract}`).join('\n\n')}
 
 ${langInstruction}
 
@@ -82,7 +140,7 @@ Write naturally with varied sentence structure. Cite the provided articles appro
 
 Topic: ${topic}
 Research Questions:
-${researchQuestions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
+${questionsFormatted}
 
 ${langInstruction}
 
@@ -100,7 +158,7 @@ Be specific but adaptable to various research contexts.`,
 
 Topic: ${topic}
 Research Questions:
-${researchQuestions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
+${questionsFormatted}
 
 ${langInstruction}
 
@@ -129,7 +187,7 @@ Present as a structured timeline with months and activities.`,
       references: `Format these articles as academic references.
 
 Articles:
-${articles.map((a, i) => `${i + 1}. Title: ${a.title}`).join('\n\n')}
+${(articles || []).map((a, i) => `${i + 1}. Title: ${a.title}`).join('\n\n')}
 
 Format in APA 7th edition style.`,
 
@@ -137,7 +195,7 @@ Format in APA 7th edition style.`,
 
 Topic: ${topic}
 Research Questions:
-${researchQuestions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
+${questionsFormatted}
 
 Key Literature:
 ${articlesSummary}
@@ -157,14 +215,8 @@ Write naturally and professionally.`,
     };
 
     const prompt = sectionPrompts[section];
-    if (!prompt) {
-      return new Response(JSON.stringify({ error: 'Invalid section type' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
 
-    console.log(`Generating proposal section: ${section}`);
+    console.log(`User ${user.id} generating proposal section: ${section}`);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -188,11 +240,19 @@ Write naturally and professionally.`,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: 'AI credits exhausted. Please add credits to continue.' }), {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
       throw new Error('Proposal generation failed');
     }
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || '';
+
+    console.log('Proposal section generated successfully');
 
     return new Response(JSON.stringify({ content, section }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
