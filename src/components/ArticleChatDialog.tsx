@@ -4,10 +4,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageCircle, Send, Loader2, User, Bot } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { MessageCircle, Send, Loader2, User, Bot, FileUp, FileText, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Article } from '@/types/research';
+import { parsePDF, type PDFParseResult } from '@/lib/pdfParser';
 
 interface ArticleChatDialogProps {
   articles: Article[];
@@ -19,6 +21,11 @@ interface Message {
   content: string;
 }
 
+interface UploadedPDF {
+  name: string;
+  content: PDFParseResult;
+}
+
 export function ArticleChatDialog({ articles, trigger }: ArticleChatDialogProps) {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
@@ -26,7 +33,10 @@ export function ArticleChatDialog({ articles, trigger }: ArticleChatDialogProps)
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadedPDFs, setUploadedPDFs] = useState<UploadedPDF[]>([]);
+  const [isParsingPDF, setIsParsingPDF] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -43,6 +53,36 @@ export function ArticleChatDialog({ articles, trigger }: ArticleChatDialogProps)
     }
   }, [open, articles.length, t]);
 
+  const handlePDFUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsParsingPDF(true);
+    try {
+      for (const file of Array.from(files)) {
+        if (file.type !== 'application/pdf') {
+          toast({ title: 'Invalid file', description: 'Please upload PDF files only', variant: 'destructive' });
+          continue;
+        }
+
+        const parsed = await parsePDF(file);
+        
+        setUploadedPDFs(prev => [...prev, { name: file.name, content: parsed }]);
+        toast({ title: 'PDF Parsed', description: `Extracted ${parsed.pageCount} pages from ${file.name}` });
+      }
+    } catch (error) {
+      console.error('PDF parsing error:', error);
+      toast({ title: 'PDF Error', description: 'Failed to parse PDF. Try a different file.', variant: 'destructive' });
+    } finally {
+      setIsParsingPDF(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const removePDF = (index: number) => {
+    setUploadedPDFs(prev => prev.filter((_, i) => i !== index));
+  };
+
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
@@ -52,6 +92,20 @@ export function ArticleChatDialog({ articles, trigger }: ArticleChatDialogProps)
     setIsLoading(true);
 
     try {
+      // Build context from articles + uploaded PDFs
+      const pdfContext = uploadedPDFs.map(pdf => {
+        const sections = pdf.content.sections;
+        let text = `\n\n--- PDF: ${pdf.name} ---\n`;
+        if (sections.abstract) text += `Abstract: ${sections.abstract}\n`;
+        if (sections.methods) text += `Methods: ${sections.methods}\n`;
+        if (sections.results) text += `Results: ${sections.results}\n`;
+        if (sections.conclusions) text += `Conclusions: ${sections.conclusions}\n`;
+        if (pdf.content.tables.length > 0) {
+          text += `\nExtracted Tables:\n${pdf.content.tables.join('\n\n')}`;
+        }
+        return text;
+      }).join('\n');
+
       const { data, error } = await supabase.functions.invoke('chat-with-articles', {
         body: {
           question: userMessage,
@@ -62,6 +116,7 @@ export function ArticleChatDialog({ articles, trigger }: ArticleChatDialogProps)
             journal: a.journal,
             year: a.publicationDate
           })),
+          pdfContext: pdfContext || undefined,
           history: messages.slice(-6),
           language: i18n.language
         }
@@ -148,7 +203,39 @@ export function ArticleChatDialog({ articles, trigger }: ArticleChatDialogProps)
           </div>
         </ScrollArea>
 
+        {/* Uploaded PDFs */}
+        {uploadedPDFs.length > 0 && (
+          <div className="flex flex-wrap gap-2 pt-2">
+            {uploadedPDFs.map((pdf, index) => (
+              <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                <FileText className="w-3 h-3" />
+                {pdf.name.slice(0, 20)}...
+                <button onClick={() => removePDF(index)} className="ml-1 hover:text-destructive">
+                  <X className="w-3 h-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+        )}
+
         <div className="flex gap-2 pt-4 border-t border-border">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handlePDFUpload}
+            accept=".pdf"
+            multiple
+            className="hidden"
+          />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isParsingPDF}
+            title="Upload PDF for analysis"
+          >
+            {isParsingPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileUp className="w-4 h-4" />}
+          </Button>
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}

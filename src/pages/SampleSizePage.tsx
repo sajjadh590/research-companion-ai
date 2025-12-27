@@ -7,10 +7,46 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calculator, Search, BookOpen, TrendingUp } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Calculator, Search, BookOpen, TrendingUp, Code, Info, ExternalLink } from 'lucide-react';
 import { Layout } from '@/components/Layout';
 import { calculateSampleSize, calculatePower } from '@/lib/statistics';
 import { useToast } from '@/hooks/use-toast';
+
+// Formula documentation for transparency
+const SAMPLE_SIZE_FORMULAS = {
+  two_means: {
+    name: "Two Independent Means (Cohen's d)",
+    formula: 'n = 2 × ((Zα + Zβ)² × σ²) / δ²',
+    description: 'Standard formula for comparing two group means',
+    reference: 'Cohen, J. (1988). Statistical Power Analysis'
+  },
+  two_proportions: {
+    name: 'Two Proportions (Chi-square)',
+    formula: 'n = ((Zα√(2p̄q̄) + Zβ√(p₁q₁ + p₂q₂))² / (p₁ - p₂)²',
+    description: 'Arcsin approximation for proportion comparisons',
+    reference: 'Fleiss, J.L. (1981). Statistical Methods'
+  },
+  correlation: {
+    name: 'Correlation (Fisher Z)',
+    formula: "n = ((Zα + Zβ) / C)² + 3, where C = 0.5×ln((1+r)/(1-r))",
+    description: "Fisher's Z transformation for correlation",
+    reference: 'Fisher, R.A. (1921). On the probable error'
+  },
+  one_sample_mean: {
+    name: 'One Sample Mean',
+    formula: 'n = ((Zα + Zβ) × σ / δ)²',
+    description: 'Single group comparison to known value',
+    reference: 'Cohen, J. (1988). Statistical Power Analysis'
+  },
+  paired: {
+    name: 'Paired Samples',
+    formula: 'n = ((Zα + Zβ) / d)²',
+    description: 'Matched pairs or repeated measures',
+    reference: 'Cohen, J. (1988). Statistical Power Analysis'
+  }
+};
 
 const studyTypes = [
   { value: 'two_means', label: 'Two Independent Means (t-test)', labelFa: 'مقایسه دو میانگین مستقل' },
@@ -209,7 +245,15 @@ export default function SampleSizePage() {
               <div className="space-y-6">
                 <Card className={result ? 'border-primary' : ''}>
                   <CardHeader>
-                    <CardTitle>{t('sample.result')}</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                      {t('sample.result')}
+                      {result && (
+                        <Badge className="bg-success/20 text-success border-success/30">
+                          <Code className="w-3 h-3 mr-1" />
+                          Calculated
+                        </Badge>
+                      )}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     {result ? (
@@ -221,6 +265,15 @@ export default function SampleSizePage() {
                             ({Math.ceil(result / 2)} per group)
                           </p>
                         )}
+                        <div className="mt-4 p-3 bg-muted/50 rounded-lg text-left">
+                          <p className="text-xs font-medium text-foreground mb-1">Formula Used:</p>
+                          <code className="text-xs text-muted-foreground block">
+                            {SAMPLE_SIZE_FORMULAS[studyType].formula}
+                          </code>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Ref: {SAMPLE_SIZE_FORMULAS[studyType].reference}
+                          </p>
+                        </div>
                       </div>
                     ) : (
                       <p className="text-center text-muted-foreground">
@@ -247,6 +300,35 @@ export default function SampleSizePage() {
                       <span>Large:</span>
                       <span className="font-medium">{guide.large}</span>
                     </div>
+                    <p className="text-xs text-muted-foreground pt-2 border-t">
+                      Based on Cohen's conventions (1988)
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-1">
+                      <Info className="w-4 h-4" />
+                      About This Calculator
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-xs text-muted-foreground space-y-2">
+                    <p>
+                      This calculator uses deterministic formulas—no AI/LLM involvement.
+                    </p>
+                    <p>
+                      <strong>Method:</strong> {SAMPLE_SIZE_FORMULAS[studyType].name}
+                    </p>
+                    <a
+                      href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3148614/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-primary hover:underline"
+                    >
+                      Learn more about sample size calculation
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
                   </CardContent>
                 </Card>
               </div>
