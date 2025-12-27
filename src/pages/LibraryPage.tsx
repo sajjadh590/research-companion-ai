@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +13,7 @@ import { Plus, FolderOpen, FileText, Trash2, Search, ExternalLink } from 'lucide
 import { Layout } from '@/components/Layout';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Project {
   id: string;
@@ -42,6 +44,8 @@ interface SavedArticle {
 export default function LibraryPage() {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const { user, isLoading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const isRTL = ['fa', 'ar'].includes(i18n.language);
 
   const [projects, setProjects] = useState<Project[]>([]);
@@ -53,8 +57,12 @@ export default function LibraryPage() {
   const [newProject, setNewProject] = useState({ title: '', topic: '', description: '' });
 
   useEffect(() => {
-    loadProjects();
-  }, []);
+    if (!authLoading && !user) {
+      navigate('/auth');
+    } else if (user) {
+      loadProjects();
+    }
+  }, [user, authLoading]);
 
   useEffect(() => {
     if (selectedProject) {
@@ -130,6 +138,11 @@ export default function LibraryPage() {
       return;
     }
 
+    if (!user) {
+      toast({ title: 'Error', description: t('auth.loginRequired'), variant: 'destructive' });
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('research_projects')
@@ -138,6 +151,7 @@ export default function LibraryPage() {
           topic: newProject.topic,
           description: newProject.description || null,
           language: i18n.language,
+          user_id: user.id,
         })
         .select()
         .single();

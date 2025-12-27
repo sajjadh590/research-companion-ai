@@ -22,6 +22,7 @@ export type Database = {
           id: string
           project_id: string | null
           result: Json
+          user_id: string | null
         }
         Insert: {
           analysis_type: string
@@ -30,6 +31,7 @@ export type Database = {
           id?: string
           project_id?: string | null
           result: Json
+          user_id?: string | null
         }
         Update: {
           analysis_type?: string
@@ -38,6 +40,7 @@ export type Database = {
           id?: string
           project_id?: string | null
           result?: Json
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -75,6 +78,7 @@ export type Database = {
           standard_error: number | null
           study_name: string
           subgroup: string | null
+          user_id: string | null
           variance: number | null
           weight: number | null
         }
@@ -96,6 +100,7 @@ export type Database = {
           standard_error?: number | null
           study_name: string
           subgroup?: string | null
+          user_id?: string | null
           variance?: number | null
           weight?: number | null
         }
@@ -117,6 +122,7 @@ export type Database = {
           standard_error?: number | null
           study_name?: string
           subgroup?: string | null
+          user_id?: string | null
           variance?: number | null
           weight?: number | null
         }
@@ -147,6 +153,7 @@ export type Database = {
           template_format: string | null
           title: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -157,6 +164,7 @@ export type Database = {
           template_format?: string | null
           title: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -167,6 +175,7 @@ export type Database = {
           template_format?: string | null
           title?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -188,6 +197,7 @@ export type Database = {
           title: string
           topic: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -198,6 +208,7 @@ export type Database = {
           title: string
           topic: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -208,6 +219,7 @@ export type Database = {
           title?: string
           topic?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -234,6 +246,7 @@ export type Database = {
           tags: string[] | null
           title: string
           url: string | null
+          user_id: string | null
         }
         Insert: {
           abstract?: string | null
@@ -257,6 +270,7 @@ export type Database = {
           tags?: string[] | null
           title: string
           url?: string | null
+          user_id?: string | null
         }
         Update: {
           abstract?: string | null
@@ -280,6 +294,7 @@ export type Database = {
           tags?: string[] | null
           title?: string
           url?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
