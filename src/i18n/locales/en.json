@@ -134,6 +134,24 @@
     "copied": "Copied!",
     "close": "Close"
   },
+  "auth": {
+    "welcome": "Welcome to Research Copilot",
+    "description": "Sign in to access your research projects and saved articles",
+    "login": "Login",
+    "signup": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "error": "Error",
+    "success": "Success",
+    "loginSuccess": "Logged in successfully",
+    "signupSuccess": "Account created successfully",
+    "fillFields": "Please fill in all fields",
+    "passwordMismatch": "Passwords do not match",
+    "passwordTooShort": "Password must be at least 6 characters",
+    "logout": "Logout",
+    "loginRequired": "Please login to access this feature"
+  },
   "settings": {
     "title": "Settings",
     "language": "Language",

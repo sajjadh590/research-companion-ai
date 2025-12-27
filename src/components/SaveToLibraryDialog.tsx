@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Bookmark, Plus, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import type { Article } from '@/types/research';
 
 interface SaveToLibraryDialogProps {
@@ -25,6 +26,7 @@ interface Project {
 export function SaveToLibraryDialog({ articles, trigger, onSaved }: SaveToLibraryDialogProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
@@ -66,6 +68,11 @@ export function SaveToLibraryDialog({ articles, trigger, onSaved }: SaveToLibrar
       return;
     }
 
+    if (!user) {
+      toast({ title: t('common.error'), description: t('auth.loginRequired'), variant: 'destructive' });
+      return;
+    }
+
     setIsSaving(true);
     try {
       const { data, error } = await supabase
@@ -73,6 +80,7 @@ export function SaveToLibraryDialog({ articles, trigger, onSaved }: SaveToLibrar
         .insert({
           title: newProjectTitle,
           topic: newProjectTopic,
+          user_id: user.id,
         })
         .select()
         .single();
@@ -99,10 +107,16 @@ export function SaveToLibraryDialog({ articles, trigger, onSaved }: SaveToLibrar
       return;
     }
 
+    if (!user) {
+      toast({ title: t('common.error'), description: t('auth.loginRequired'), variant: 'destructive' });
+      return;
+    }
+
     setIsSaving(true);
     try {
       const articlesToSave = articles.map(article => ({
         project_id: selectedProjectId,
+        user_id: user.id,
         source: article.source,
         source_id: article.id,
         title: article.title,

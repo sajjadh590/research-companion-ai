@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { 
   Home, 
@@ -12,10 +12,13 @@ import {
   Settings,
   Brain,
   Menu,
-  X
+  X,
+  LogIn,
+  LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 const navigation = [
   { key: 'home', path: '/', icon: Home },
@@ -31,8 +34,15 @@ const navigation = [
 export function Layout({ children }: { children: React.ReactNode }) {
   const { t, i18n } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const isRTL = ['fa', 'ar'].includes(i18n.language);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
 
   return (
     <div className="min-h-screen bg-background" dir={isRTL ? 'rtl' : 'ltr'}>
@@ -73,7 +83,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </nav>
 
           {/* Language Selector */}
-          <div className="p-4 border-t border-sidebar-border">
+          <div className="p-4 border-t border-sidebar-border space-y-3">
             <select
               value={i18n.language}
               onChange={(e) => i18n.changeLanguage(e.target.value)}
@@ -84,6 +94,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <option value="ar">العربية</option>
               <option value="tr">Türkçe</option>
             </select>
+            
+            {user ? (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleSignOut}
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                {t('auth.logout')}
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => navigate('/auth')}
+              >
+                <LogIn className="w-4 h-4 mr-2" />
+                {t('auth.login')}
+              </Button>
+            )}
           </div>
         </div>
       </aside>
@@ -128,7 +158,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </NavLink>
               );
             })}
-            <div className="py-2">
+            <div className="py-2 space-y-2">
               <select
                 value={i18n.language}
                 onChange={(e) => i18n.changeLanguage(e.target.value)}
@@ -139,6 +169,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <option value="ar">العربية</option>
                 <option value="tr">Türkçe</option>
               </select>
+              
+              {user ? (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  {t('auth.logout')}
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => navigate('/auth')}
+                >
+                  <LogIn className="w-4 h-4 mr-2" />
+                  {t('auth.login')}
+                </Button>
+              )}
             </div>
           </nav>
         )}
