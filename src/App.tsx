@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "@/i18n";
 import { AuthProvider } from "@/hooks/useAuth";
+import { SelectedArticlesProvider } from "@/hooks/useSelectedArticles";
 import Index from "./pages/Index";
 import SearchPage from "./pages/SearchPage";
 import LibraryPage from "./pages/LibraryPage";
@@ -21,24 +22,26 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/search" element={<SearchPage />} />
-            <Route path="/library" element={<LibraryPage />} />
-            <Route path="/systematic-review" element={<SystematicReviewPage />} />
-            <Route path="/meta-analysis" element={<MetaAnalysisPage />} />
-            <Route path="/sample-size" element={<SampleSizePage />} />
-            <Route path="/proposal" element={<ProposalPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <SelectedArticlesProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/search" element={<SearchPage />} />
+              <Route path="/library" element={<LibraryPage />} />
+              <Route path="/systematic-review" element={<SystematicReviewPage />} />
+              <Route path="/meta-analysis" element={<MetaAnalysisPage />} />
+              <Route path="/sample-size" element={<SampleSizePage />} />
+              <Route path="/proposal" element={<ProposalPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </SelectedArticlesProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

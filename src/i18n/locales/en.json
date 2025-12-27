@@ -63,7 +63,11 @@
     "picoAnalysis": "PICO Analysis",
     "keyFindings": "Key Findings",
     "aiAnalysis": "AI Analysis",
-    "view": "View"
+    "view": "View",
+    "sendToWorkspace": "Send to Workspace",
+    "articlesSent": "Articles Sent",
+    "articlesAddedToWorkspace": "articles added to workspace",
+    "selectArticlesFirst": "Please select articles first"
   },
   "library": {
     "title": "My Library",
@@ -82,7 +86,14 @@
     "included": "Included",
     "riskOfBias": "Risk of Bias",
     "pico": "PICO Analysis",
-    "flowDiagram": "PRISMA Flow Diagram"
+    "flowDiagram": "PRISMA Flow Diagram",
+    "noArticles": "No articles in workspace",
+    "addArticlesFromSearch": "Add articles from the Search page by selecting them and clicking 'Send to Workspace'",
+    "goToSearch": "Go to Search",
+    "articlesInWorkspace": "articles in workspace",
+    "clearWorkspace": "Clear Workspace",
+    "workspaceCleared": "Workspace Cleared",
+    "allArticlesRemoved": "All articles removed from workspace"
   },
   "meta": {
     "title": "Meta-Analysis",

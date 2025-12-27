@@ -63,7 +63,11 @@
     "picoAnalysis": "تحلیل PICO",
     "keyFindings": "یافته‌های کلیدی",
     "aiAnalysis": "تحلیل هوش مصنوعی",
-    "view": "مشاهده"
+    "view": "مشاهده",
+    "sendToWorkspace": "ارسال به فضای کار",
+    "articlesSent": "مقالات ارسال شدند",
+    "articlesAddedToWorkspace": "مقاله به فضای کار اضافه شد",
+    "selectArticlesFirst": "لطفاً ابتدا مقالات را انتخاب کنید"
   },
   "library": {
     "title": "کتابخانه من",
@@ -82,7 +86,14 @@
     "included": "وارد شده",
     "riskOfBias": "ریسک سوگیری",
     "pico": "تحلیل PICO",
-    "flowDiagram": "نمودار PRISMA"
+    "flowDiagram": "نمودار PRISMA",
+    "noArticles": "مقاله‌ای در فضای کار نیست",
+    "addArticlesFromSearch": "از صفحه جستجو مقالات را انتخاب کنید و دکمه «ارسال به فضای کار» را بزنید",
+    "goToSearch": "رفتن به جستجو",
+    "articlesInWorkspace": "مقاله در فضای کار",
+    "clearWorkspace": "پاک کردن فضای کار",
+    "workspaceCleared": "فضای کار پاک شد",
+    "allArticlesRemoved": "همه مقالات از فضای کار حذف شدند"
   },
   "meta": {
     "title": "متاآنالیز",

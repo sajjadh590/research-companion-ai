@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,10 +8,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, XCircle, HelpCircle, FileText, Download, Brain, Loader2, ExternalLink } from 'lucide-react';
+import { CheckCircle, XCircle, HelpCircle, FileText, Download, Brain, Loader2, ExternalLink, Search, Trash2 } from 'lucide-react';
 import { Layout } from '@/components/Layout';
 import { analyzeArticles } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import { useSelectedArticles } from '@/hooks/useSelectedArticles';
 import { ArticleSourceBadge } from '@/components/ArticleSourceBadge';
 
 interface ScreeningArticle {
@@ -45,13 +47,26 @@ const robDomains = [
 export default function SystematicReviewPage() {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { selectedArticles: globalArticles, clearArticles, count: globalCount } = useSelectedArticles();
 
-  // Demo data for screening with source verification
-  const [articles, setArticles] = useState<ScreeningArticle[]>([
-    { id: '1', title: 'Effects of Exercise on Mental Health: A Systematic Review', abstract: 'This systematic review examines the effects of physical exercise on mental health outcomes...', status: 'pending', doi: '10.1001/jama.2023.1234', pmid: '36789012', source: 'pubmed', sourceId: '36789012' },
-    { id: '2', title: 'Cognitive Behavioral Therapy for Anxiety: Meta-Analysis', abstract: 'A comprehensive meta-analysis of randomized controlled trials evaluating CBT for anxiety disorders...', status: 'pending', doi: '10.1016/j.jpsychires.2023.05.001', source: 'openalex', sourceId: 'W1234567890' },
-    { id: '3', title: 'Impact of Sleep Quality on Academic Performance', abstract: 'This study investigates the relationship between sleep quality and academic outcomes in university students...', status: 'included', pmid: '35678901', source: 'pubmed', sourceId: '35678901' },
-  ]);
+  // Convert global articles to screening articles
+  const [articles, setArticles] = useState<ScreeningArticle[]>([]);
+
+  // Sync with global articles
+  useEffect(() => {
+    const screeningArticles: ScreeningArticle[] = globalArticles.map(article => ({
+      id: article.id,
+      title: article.title,
+      abstract: article.abstract || '',
+      status: 'pending' as const,
+      doi: article.doi,
+      source: article.source,
+      sourceId: article.sourceId,
+      url: article.url,
+    }));
+    setArticles(screeningArticles);
+  }, [globalArticles]);
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [picoResults, setPicoResults] = useState<string>('');
@@ -116,6 +131,14 @@ export default function SystematicReviewPage() {
     }
   };
 
+  const handleClearWorkspace = () => {
+    clearArticles();
+    toast({ 
+      title: t('systematic.workspaceCleared'), 
+      description: t('systematic.allArticlesRemoved'),
+    });
+  };
+
   const counts = {
     total: articles.length,
     pending: articles.filter(a => a.status === 'pending').length,
@@ -124,14 +147,53 @@ export default function SystematicReviewPage() {
     maybe: articles.filter(a => a.status === 'maybe').length,
   };
 
-  const progress = ((counts.included + counts.excluded + counts.maybe) / counts.total) * 100;
+  const progress = counts.total > 0 ? ((counts.included + counts.excluded + counts.maybe) / counts.total) * 100 : 0;
+
+  // Empty state - no articles
+  if (articles.length === 0) {
+    return (
+      <Layout>
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">{t('systematic.title')}</h1>
+            <p className="text-muted-foreground mt-1">PRISMA-compliant systematic review workflow</p>
+          </div>
+
+          <Card className="py-12">
+            <CardContent className="flex flex-col items-center justify-center text-center">
+              <FileText className="w-16 h-16 text-muted-foreground/50 mb-4" />
+              <h3 className="text-xl font-semibold mb-2">{t('systematic.noArticles')}</h3>
+              <p className="text-muted-foreground max-w-md mb-6">
+                {t('systematic.addArticlesFromSearch')}
+              </p>
+              <Button onClick={() => navigate('/search')} className="gap-2">
+                <Search className="w-4 h-4" />
+                {t('systematic.goToSearch')}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
       <div className="max-w-7xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">{t('systematic.title')}</h1>
-          <p className="text-muted-foreground mt-1">PRISMA-compliant systematic review workflow</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">{t('systematic.title')}</h1>
+            <p className="text-muted-foreground mt-1">PRISMA-compliant systematic review workflow</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Badge variant="secondary" className="text-sm">
+              {globalCount} {t('systematic.articlesInWorkspace')}
+            </Badge>
+            <Button variant="outline" size="sm" onClick={handleClearWorkspace} className="gap-1 text-destructive">
+              <Trash2 className="w-4 h-4" />
+              {t('systematic.clearWorkspace')}
+            </Button>
+          </div>
         </div>
 
         {/* Progress Overview */}
