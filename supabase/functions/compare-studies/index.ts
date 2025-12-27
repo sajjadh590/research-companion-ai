@@ -1,10 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, createErrorResponse } from "../_shared/utils.ts";
 
 interface CompareRequest {
   articles: { title: string; abstract: string; authors?: string }[];
@@ -12,6 +8,9 @@ interface CompareRequest {
 }
 
 serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -20,7 +19,6 @@ serve(async (req) => {
     // Verify authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      console.error('No authorization header provided');
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -35,7 +33,6 @@ serve(async (req) => {
 
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     if (authError || !user) {
-      console.error('Auth error:', authError?.message);
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -46,14 +43,14 @@ serve(async (req) => {
 
     // Input validation
     if (!Array.isArray(articles) || articles.length < 2) {
-      return new Response(JSON.stringify({ error: 'At least 2 articles are required for comparison' }), {
+      return new Response(JSON.stringify({ error: 'At least 2 articles are required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     if (articles.length > 20) {
-      return new Response(JSON.stringify({ error: 'Maximum 20 articles allowed for comparison' }), {
+      return new Response(JSON.stringify({ error: 'Maximum 20 articles allowed' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -62,7 +59,11 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
     if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+      console.error('LOVABLE_API_KEY not configured');
+      return new Response(JSON.stringify({ error: 'Service temporarily unavailable' }), {
+        status: 503,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const languageInstructions: Record<string, string> = {
@@ -91,19 +92,7 @@ For EACH study, extract the following in a structured JSON format:
 - sampleSize: Number of participants (use "NR" if not reported)
 - keyFindings: Main findings in 1-2 sentences
 
-Return ONLY a valid JSON array with objects for each study. Example format:
-[
-  {
-    "title": "Short study title",
-    "population": "Adults with diabetes",
-    "intervention": "Exercise program",
-    "comparison": "Standard care",
-    "outcome": "HbA1c levels",
-    "design": "RCT",
-    "sampleSize": "150",
-    "keyFindings": "Significant reduction in HbA1c"
-  }
-]`;
+Return ONLY a valid JSON array with objects for each study.`;
 
     console.log(`User ${user.id} comparing ${articles.length} studies`);
 
@@ -130,20 +119,21 @@ Return ONLY a valid JSON array with objects for each study. Example format:
         });
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: 'AI credits exhausted. Please add credits to continue.' }), {
+        return new Response(JSON.stringify({ error: 'Service quota exceeded. Please try again later.' }), {
           status: 402,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      const errorText = await response.text();
-      console.error('AI gateway error:', response.status, errorText);
-      throw new Error('AI comparison failed');
+      console.error('AI gateway error:', response.status);
+      return new Response(JSON.stringify({ error: 'Comparison failed. Please try again.' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const data = await response.json();
     let resultText = data.choices?.[0]?.message?.content || '[]';
     
-    // Clean up the response to extract JSON
     const jsonMatch = resultText.match(/\[[\s\S]*\]/);
     if (jsonMatch) {
       resultText = jsonMatch[0];
@@ -153,7 +143,7 @@ Return ONLY a valid JSON array with objects for each study. Example format:
     try {
       comparison = JSON.parse(resultText);
     } catch (e) {
-      console.error('Failed to parse comparison JSON:', resultText);
+      console.error('Failed to parse comparison JSON');
       comparison = [];
     }
 
@@ -163,10 +153,6 @@ Return ONLY a valid JSON array with objects for each study. Example format:
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Comparison error:', error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return createErrorResponse(corsHeaders, error, 'Comparison failed. Please try again.');
   }
 });

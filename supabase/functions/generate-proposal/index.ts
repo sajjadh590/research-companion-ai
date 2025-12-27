@@ -1,10 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, createErrorResponse } from "../_shared/utils.ts";
 
 interface ProposalRequest {
   topic: string;
@@ -16,6 +12,9 @@ interface ProposalRequest {
 }
 
 serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -24,7 +23,6 @@ serve(async (req) => {
     // Verify authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      console.error('No authorization header provided');
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -39,7 +37,6 @@ serve(async (req) => {
 
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     if (authError || !user) {
-      console.error('Auth error:', authError?.message);
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -57,7 +54,7 @@ serve(async (req) => {
     }
 
     if (topic.length > 500) {
-      return new Response(JSON.stringify({ error: 'Topic too long (max 500 characters)' }), {
+      return new Response(JSON.stringify({ error: 'Topic too long' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -81,7 +78,11 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
     if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+      console.error('LOVABLE_API_KEY not configured');
+      return new Response(JSON.stringify({ error: 'Service temporarily unavailable' }), {
+        status: 503,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const languageInstructions: Record<string, string> = {
@@ -115,7 +116,7 @@ Include:
 - Research objectives
 - Brief overview of methodology
 
-Write in a natural, human style. Vary sentence structure and length. Avoid repetitive patterns.`,
+Write in a natural, human style.`,
 
       literature_review: `Write the Literature Review section for a research proposal.
 
@@ -132,9 +133,7 @@ Include:
 - Review of relevant studies
 - Synthesis of findings
 - Identification of gaps
-- How this study addresses the gaps
-
-Write naturally with varied sentence structure. Cite the provided articles appropriately.`,
+- How this study addresses the gaps`,
 
       methodology: `Write the Methodology section for a research proposal.
 
@@ -150,9 +149,7 @@ Include:
 - Data collection methods
 - Data analysis procedures
 - Ethical considerations
-- Limitations
-
-Be specific but adaptable to various research contexts.`,
+- Limitations`,
 
       objectives: `Write the Objectives and Hypotheses section for a research proposal.
 
@@ -168,7 +165,7 @@ Include:
 - Research hypotheses (if applicable)
 - Expected outcomes`,
 
-      timeline: `Create a research timeline/Gantt chart description for a proposal.
+      timeline: `Create a research timeline for a proposal.
 
 Topic: ${topic}
 
@@ -180,9 +177,7 @@ Create a realistic 12-month timeline including:
 - Data collection
 - Data analysis
 - Writing and revision
-- Submission
-
-Present as a structured timeline with months and activities.`,
+- Submission`,
 
       references: `Format these articles as academic references.
 
@@ -209,9 +204,7 @@ Include all major sections with brief content for each:
 4. Methodology
 5. Expected Outcomes
 6. Timeline
-7. References
-
-Write naturally and professionally.`,
+7. References`,
     };
 
     const prompt = sectionPrompts[section];
@@ -227,7 +220,7 @@ Write naturally and professionally.`,
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
         messages: [
-          { role: 'system', content: 'You are an expert academic writer specializing in research proposals. Write in a natural, human style that varies in sentence structure. Avoid repetitive patterns or obvious AI-generated text. Be thorough but concise.' },
+          { role: 'system', content: 'You are an expert academic writer specializing in research proposals.' },
           { role: 'user', content: prompt }
         ],
       }),
@@ -241,12 +234,16 @@ Write naturally and professionally.`,
         });
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: 'AI credits exhausted. Please add credits to continue.' }), {
+        return new Response(JSON.stringify({ error: 'Service quota exceeded. Please try again later.' }), {
           status: 402,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      throw new Error('Proposal generation failed');
+      console.error('AI gateway error:', response.status);
+      return new Response(JSON.stringify({ error: 'Generation failed. Please try again.' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const data = await response.json();
@@ -258,10 +255,6 @@ Write naturally and professionally.`,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Proposal generation error:', error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return createErrorResponse(corsHeaders, error, 'Generation failed. Please try again.');
   }
 });
