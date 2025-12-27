@@ -7,12 +7,51 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Trash2, BarChart3, Download, Calculator } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Plus, Trash2, BarChart3, Download, Calculator, Info, Code } from 'lucide-react';
 import { Layout } from '@/components/Layout';
 import { calculateMetaAnalysis, eggersTest, leaveOneOutAnalysis } from '@/lib/statistics';
 import type { MetaAnalysisStudy, MetaAnalysisResult } from '@/types/research';
 import { useToast } from '@/hooks/use-toast';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ErrorBar, ScatterChart, Scatter, ZAxis } from 'recharts';
+
+// Formula references for transparency
+const FORMULA_REFS = {
+  pooledEffect: {
+    name: 'Inverse Variance Weighting (Random Effects)',
+    formula: 'θ̂ = Σ(wᵢθᵢ) / Σwᵢ, where wᵢ = 1/(Vᵢ + τ²)',
+    reference: 'DerSimonian & Laird, 1986'
+  },
+  iSquared: {
+    name: 'Higgins I² Statistic',
+    formula: 'I² = max(0, (Q - df) / Q × 100%)',
+    reference: 'Higgins et al., 2003'
+  },
+  tauSquared: {
+    name: 'Between-study Variance (τ²)',
+    formula: 'τ² = (Q - df) / C, where C = Σwᵢ - Σwᵢ²/Σwᵢ',
+    reference: 'DerSimonian & Laird, 1986'
+  }
+};
+
+function FormulaTooltip({ formulaKey }: { formulaKey: keyof typeof FORMULA_REFS }) {
+  const ref = FORMULA_REFS[formulaKey];
+  return (
+    <TooltipProvider>
+      <UITooltip>
+        <TooltipTrigger asChild>
+          <Info className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help inline ml-1" />
+        </TooltipTrigger>
+        <TooltipContent className="max-w-sm">
+          <p className="font-medium">{ref.name}</p>
+          <code className="text-xs block mt-1 bg-muted p-1 rounded">{ref.formula}</code>
+          <p className="text-xs text-muted-foreground mt-1">Ref: {ref.reference}</p>
+        </TooltipContent>
+      </UITooltip>
+    </TooltipProvider>
+  );
+}
 
 const defaultStudy: Partial<MetaAnalysisStudy> = {
   studyName: '',
@@ -224,10 +263,24 @@ export default function MetaAnalysisPage() {
           <TabsContent value="results" className="space-y-6">
             {result && (
               <>
+                {/* Calculated Badge */}
+                <div className="flex items-center gap-2 mb-4">
+                  <Badge className="bg-success/20 text-success border-success/30">
+                    <Code className="w-3 h-3 mr-1" />
+                    Calculated (Not AI-Generated)
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    All statistics computed using deterministic TypeScript functions
+                  </span>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-lg">Pooled Effect</CardTitle>
+                      <CardTitle className="text-lg flex items-center">
+                        Pooled Effect
+                        <FormulaTooltip formulaKey="pooledEffect" />
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="text-3xl font-bold text-primary">{result.pooledEffect.toFixed(3)}</div>
@@ -240,12 +293,20 @@ export default function MetaAnalysisPage() {
 
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-lg">Heterogeneity</CardTitle>
+                      <CardTitle className="text-lg flex items-center">
+                        Heterogeneity
+                        <FormulaTooltip formulaKey="iSquared" />
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="text-3xl font-bold text-primary">I² = {result.iSquared.toFixed(1)}%</div>
-                      <p className="text-sm text-muted-foreground">Q = {result.qStatistic.toFixed(2)}</p>
-                      <p className="text-sm text-muted-foreground">τ² = {result.tauSquared.toFixed(4)}</p>
+                      <p className="text-sm text-muted-foreground flex items-center">
+                        Q = {result.qStatistic.toFixed(2)}
+                      </p>
+                      <p className="text-sm text-muted-foreground flex items-center">
+                        τ² = {result.tauSquared.toFixed(4)}
+                        <FormulaTooltip formulaKey="tauSquared" />
+                      </p>
                     </CardContent>
                   </Card>
 
@@ -259,6 +320,9 @@ export default function MetaAnalysisPage() {
                       </div>
                       <p className="text-sm text-muted-foreground">
                         Heterogeneity: {result.iSquared < 25 ? 'Low' : result.iSquared < 75 ? 'Moderate' : 'High'}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Based on Cochrane Handbook thresholds
                       </p>
                     </CardContent>
                   </Card>
@@ -311,7 +375,13 @@ export default function MetaAnalysisPage() {
             {result && (
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('meta.forestPlot')}</CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>{t('meta.forestPlot')}</CardTitle>
+                    <Badge className="bg-success/20 text-success border-success/30">
+                      <Code className="w-3 h-3 mr-1" />
+                      Rendered from Calculated Data
+                    </Badge>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="h-[400px]">
@@ -333,9 +403,14 @@ export default function MetaAnalysisPage() {
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
-                  <p className="text-sm text-muted-foreground text-center mt-4">
-                    Solid line = null effect (0) | Dashed line = pooled effect ({result.pooledEffect.toFixed(3)})
-                  </p>
+                  <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-muted-foreground text-center">
+                      Solid line = null effect (0) | Dashed line = pooled effect ({result.pooledEffect.toFixed(3)})
+                    </p>
+                    <p className="text-xs text-muted-foreground text-center mt-1">
+                      Effect sizes and CIs calculated using Inverse Variance Weighting (DerSimonian-Laird)
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             )}

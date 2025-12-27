@@ -7,10 +7,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, XCircle, HelpCircle, FileText, Download, Brain, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, HelpCircle, FileText, Download, Brain, Loader2, ExternalLink } from 'lucide-react';
 import { Layout } from '@/components/Layout';
 import { analyzeArticles } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import { ArticleSourceBadge } from '@/components/ArticleSourceBadge';
 
 interface ScreeningArticle {
   id: string;
@@ -18,6 +19,11 @@ interface ScreeningArticle {
   abstract: string;
   status: 'pending' | 'included' | 'excluded' | 'maybe';
   exclusionReason?: string;
+  doi?: string;
+  pmid?: string;
+  source?: string;
+  sourceId?: string;
+  url?: string;
 }
 
 // PRISMA stages
@@ -40,11 +46,11 @@ export default function SystematicReviewPage() {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
 
-  // Demo data for screening
+  // Demo data for screening with source verification
   const [articles, setArticles] = useState<ScreeningArticle[]>([
-    { id: '1', title: 'Effects of Exercise on Mental Health: A Systematic Review', abstract: 'This systematic review examines the effects of physical exercise on mental health outcomes...', status: 'pending' },
-    { id: '2', title: 'Cognitive Behavioral Therapy for Anxiety: Meta-Analysis', abstract: 'A comprehensive meta-analysis of randomized controlled trials evaluating CBT for anxiety disorders...', status: 'pending' },
-    { id: '3', title: 'Impact of Sleep Quality on Academic Performance', abstract: 'This study investigates the relationship between sleep quality and academic outcomes in university students...', status: 'included' },
+    { id: '1', title: 'Effects of Exercise on Mental Health: A Systematic Review', abstract: 'This systematic review examines the effects of physical exercise on mental health outcomes...', status: 'pending', doi: '10.1001/jama.2023.1234', pmid: '36789012', source: 'pubmed', sourceId: '36789012' },
+    { id: '2', title: 'Cognitive Behavioral Therapy for Anxiety: Meta-Analysis', abstract: 'A comprehensive meta-analysis of randomized controlled trials evaluating CBT for anxiety disorders...', status: 'pending', doi: '10.1016/j.jpsychires.2023.05.001', source: 'openalex', sourceId: 'W1234567890' },
+    { id: '3', title: 'Impact of Sleep Quality on Academic Performance', abstract: 'This study investigates the relationship between sleep quality and academic outcomes in university students...', status: 'included', pmid: '35678901', source: 'pubmed', sourceId: '35678901' },
   ]);
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -191,7 +197,8 @@ export default function SystematicReviewPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-1/2">Title / Abstract</TableHead>
+                      <TableHead className="w-2/5">Title / Abstract</TableHead>
+                      <TableHead>Source / Links</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -205,6 +212,37 @@ export default function SystematicReviewPage() {
                             <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                               {article.abstract}
                             </p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1.5">
+                            {article.doi && (
+                              <a
+                                href={`https://doi.org/${article.doi}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                DOI <ExternalLink className="w-3 h-3" />
+                              </a>
+                            )}
+                            {article.pmid && (
+                              <a
+                                href={`https://pubmed.ncbi.nlm.nih.gov/${article.pmid}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                PMID:{article.pmid} <ExternalLink className="w-3 h-3" />
+                              </a>
+                            )}
+                            {article.source && (
+                              <Badge variant="outline" className="w-fit text-xs">
+                                {article.source}
+                              </Badge>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
