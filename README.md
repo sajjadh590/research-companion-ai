@@ -1,73 +1,362 @@
-# Welcome to your Lovable project
+# 🔬 Research Copilot - ابزار تحقیقات پزشکی
 
-## Project info
+<div align="center">
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![React](https://img.shields.io/badge/React-18.3-61DAFB.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6.svg)
 
-## How can I edit this code?
+**ابزار حرفه‌ای برای محققان پزشکی، رزیدنت‌ها و دانشجویان علوم پزشکی**
 
-There are several ways of editing your application.
+[English](#english) | [فارسی](#فارسی)
 
-**Use Lovable**
+</div>
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## فارسی
 
-**Use your preferred IDE**
+### 📋 درباره پروژه
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Research Copilot یک پلتفرم جامع تحقیقاتی است که به محققان پزشکی کمک می‌کند تا:
+- مقالات علمی را از چندین منبع معتبر جستجو کنند
+- متاآنالیز انجام دهند
+- حجم نمونه محاسبه کنند
+- مرور سیستماتیک انجام دهند
+- پروپوزال تحقیقاتی بنویسند
+- با هوش مصنوعی درباره مقالات گفتگو کنند
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### ✨ ویژگی‌های کلیدی
 
-Follow these steps:
+| ویژگی | توضیحات |
+|-------|---------|
+| 🔍 **جستجوی چند-منبعی** | جستجو همزمان در PubMed, OpenAlex, Semantic Scholar, arXiv |
+| 📊 **متاآنالیز** | محاسبه اثر ترکیبی، Forest Plot، تحلیل ناهمگونی (I², Q, τ²) |
+| 🧮 **محاسبه‌گر حجم نمونه** | محاسبه حجم نمونه برای انواع مطالعات با فرمول‌های استاندارد |
+| 📝 **مرور سیستماتیک** | مدیریت غربالگری مقالات، ارزیابی ریسک بایاس |
+| 🤖 **چت با مقالات** | پرسش و پاسخ هوشمند درباره محتوای مقالات |
+| 📋 **تولید پروپوزال** | تولید بخش‌های مختلف پروپوزال با AI |
+| 📚 **کتابخانه شخصی** | ذخیره و مدیریت مقالات (نیاز به ثبت‌نام) |
+| 🩺 **ماشین‌حساب‌های پزشکی** | NNT, NNH, eGFR, CURB-65, Wells Score |
+| 📖 **تولید Citation** | تولید خودکار رفرنس در فرمت‌های APA, Vancouver, Harvard |
+| 🌍 **چند زبانه** | پشتیبانی از فارسی، انگلیسی، عربی، ترکی |
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+### 🧠 فلسفه طراحی: Hybrid Logic
+
+این پروژه از رویکرد **Hybrid Logic** استفاده می‌کند:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     HYBRID LOGIC                            │
+├─────────────────────────────────────────────────────────────┤
+│  📐 کد (Deterministic)      │  🤖 AI (Probabilistic)        │
+│  ─────────────────────────  │  ─────────────────────────    │
+│  • محاسبات آماری           │  • خلاصه‌نویسی مقالات         │
+│  • متاآنالیز               │  • استخراج PICO               │
+│  • حجم نمونه               │  • تحلیل Gap های تحقیقاتی     │
+│  • Forest Plot             │  • نوشتن پروپوزال             │
+│  • ماشین‌حساب‌های پزشکی     │  • مقایسه مطالعات             │
+│                            │  • چت با مقالات               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**چرا این رویکرد؟**
+- **اعداد = کد**: محاسبات ریاضی باید deterministic باشند تا از hallucination جلوگیری شود
+- **متن = AI**: تحلیل و تولید متن نقطه قوت هوش مصنوعی است
+
+---
+
+## 🔌 API ها و محدودیت‌ها
+
+### 1. PubMed E-utilities API
+
+| مشخصات | مقدار |
+|--------|-------|
+| **URL** | `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/` |
+| **هزینه** | رایگان |
+| **Rate Limit (بدون کلید)** | 3 درخواست/ثانیه |
+| **Rate Limit (با کلید)** | 10 درخواست/ثانیه |
+| **نیاز به API Key** | خیر (توصیه می‌شود) |
+| **مستندات** | [NCBI E-utilities](https://www.ncbi.nlm.nih.gov/books/NBK25500/) |
+
+**نحوه دریافت API Key:**
+1. به [NCBI Account](https://www.ncbi.nlm.nih.gov/account/) بروید
+2. ثبت‌نام کنید (رایگان)
+3. از Settings > API Key Management کلید دریافت کنید
+
+---
+
+### 2. OpenAlex API
+
+| مشخصات | مقدار |
+|--------|-------|
+| **URL** | `https://api.openalex.org/` |
+| **هزینه** | رایگان و Open Source |
+| **Rate Limit** | 100,000 درخواست/روز |
+| **نیاز به API Key** | خیر |
+| **مستندات** | [OpenAlex Docs](https://docs.openalex.org/) |
+
+**نکته مهم:** ارسال `User-Agent` با ایمیل معتبر توصیه می‌شود (Polite Pool).
+
+---
+
+### 3. Semantic Scholar API
+
+| مشخصات | مقدار |
+|--------|-------|
+| **URL** | `https://api.semanticscholar.org/graph/v1/` |
+| **هزینه** | رایگان |
+| **Rate Limit (بدون کلید)** | 100 درخواست/5 دقیقه |
+| **Rate Limit (با کلید)** | 1 درخواست/ثانیه |
+| **نیاز به API Key** | خیر (توصیه می‌شود) |
+| **مستندات** | [Semantic Scholar API](https://api.semanticscholar.org/) |
+
+**نحوه دریافت API Key:**
+1. به [Semantic Scholar API](https://www.semanticscholar.org/product/api) بروید
+2. فرم درخواست را پر کنید
+3. کلید از طریق ایمیل ارسال می‌شود
+
+---
+
+### 4. arXiv API
+
+| مشخصات | مقدار |
+|--------|-------|
+| **URL** | `https://export.arxiv.org/api/query` |
+| **هزینه** | رایگان و Open Access |
+| **Rate Limit** | 1 درخواست/3 ثانیه (توصیه) |
+| **نیاز به API Key** | خیر |
+| **فرمت پاسخ** | XML (Atom) |
+| **مستندات** | [arXiv API](https://info.arxiv.org/help/api/index.html) |
+
+---
+
+### 5. Lovable AI Gateway
+
+| مشخصات | مقدار |
+|--------|-------|
+| **URL** | `https://ai.gateway.lovable.dev/v1/chat/completions` |
+| **مدل** | `google/gemini-2.5-flash` |
+| **هزینه** | رایگان (محدود) + پرداختی |
+| **Rate Limit** | محدود به هر Workspace |
+| **کاربرد** | تحلیل مقالات، چت، پروپوزال |
+
+**خطاهای رایج:**
+- `429 Too Many Requests`: بیش از حد مجاز درخواست
+- `402 Payment Required`: اتمام اعتبار رایگان
+
+---
+
+### 📊 جدول خلاصه محدودیت‌ها
+
+| API | Rate Limit | API Key |
+|-----|------------|---------|
+| PubMed | 3-10 req/sec | اختیاری |
+| OpenAlex | 100K req/day | ندارد |
+| Semantic Scholar | 100 req/5min | اختیاری |
+| arXiv | ~1 req/3sec | ندارد |
+| Lovable AI | Workspace-based | خودکار |
+
+---
+
+## 🛠️ تکنولوژی‌ها
+
+### Frontend
+- **React 18.3** - کتابخانه UI
+- **TypeScript 5** - تایپ‌سیفتی
+- **Tailwind CSS** - استایل‌دهی
+- **shadcn/ui** - کامپوننت‌های UI
+- **React Router 6** - مسیریابی
+- **React Query** - مدیریت state سرور
+- **i18next** - چندزبانگی
+- **Recharts** - نمودارها (Forest Plot)
+
+### Backend
+- **Supabase Edge Functions** - توابع سرورلس (Deno)
+- **Supabase Auth** - احراز هویت
+- **Supabase Database** - PostgreSQL
+- **Supabase Storage** - ذخیره‌سازی فایل
+
+### محاسبات آماری
+- **jstat** - توزیع‌های آماری
+- **simple-statistics** - محاسبات پایه
+- **کتابخانه‌های سفارشی** - متاآنالیز، حجم نمونه
+
+---
+
+## 📁 ساختار پروژه
+
+```
+src/
+├── components/          # کامپوننت‌های React
+│   ├── ui/             # کامپوننت‌های پایه (shadcn)
+│   ├── ArticleChatDialog.tsx
+│   ├── CitationGeneratorDialog.tsx
+│   ├── SaveToLibraryDialog.tsx
+│   └── StudyComparisonDialog.tsx
+├── hooks/              # Custom Hooks
+│   ├── useAuth.tsx
+│   └── use-mobile.tsx
+├── i18n/               # ترجمه‌ها
+│   └── locales/
+│       ├── en.json
+│       ├── fa.json
+│       ├── ar.json
+│       └── tr.json
+├── lib/                # توابع کمکی
+│   ├── api.ts          # کلاینت API
+│   ├── statistics.ts   # محاسبات آماری
+│   ├── clinicalCalculators.ts  # ماشین‌حساب‌های پزشکی
+│   ├── dataExtractors.ts
+│   └── pdfParser.ts
+├── pages/              # صفحات
+│   ├── Index.tsx
+│   ├── SearchPage.tsx
+│   ├── MetaAnalysisPage.tsx
+│   ├── SampleSizePage.tsx
+│   ├── SystematicReviewPage.tsx
+│   ├── ProposalPage.tsx
+│   ├── LibraryPage.tsx
+│   └── SettingsPage.tsx
+└── integrations/
+    └── supabase/       # کلاینت Supabase
+
+supabase/
+└── functions/          # Edge Functions
+    ├── search-articles/
+    ├── analyze-articles/
+    ├── chat-with-articles/
+    ├── compare-studies/
+    └── generate-proposal/
+```
+
+---
+
+## 🚀 نصب و راه‌اندازی
+
+### پیش‌نیازها
+- Node.js 18+
+- npm یا bun
+
+### نصب
+
+```bash
+# کلون کردن
 git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
-npm i
+# نصب وابستگی‌ها
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# اجرای سرور توسعه
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### متغیرهای محیطی
+فایل `.env` به صورت خودکار توسط Lovable تنظیم می‌شود:
+```env
+VITE_SUPABASE_URL=<your-supabase-url>
+VITE_SUPABASE_PUBLISHABLE_KEY=<your-anon-key>
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+## 🔐 امنیت و حریم خصوصی
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### دسترسی بدون ثبت‌نام
+- ✅ جستجوی مقالات
+- ✅ تحلیل مقالات با AI
+- ✅ چت با مقالات
+- ✅ مقایسه مطالعات
+- ✅ متاآنالیز
+- ✅ محاسبه حجم نمونه
+- ✅ ماشین‌حساب‌های پزشکی
+- ✅ تولید پروپوزال
 
-## What technologies are used for this project?
+### نیاز به ثبت‌نام
+- 🔒 ذخیره مقالات در کتابخانه
+- 🔒 ذخیره پروژه‌های تحقیقاتی
+- 🔒 دسترسی به تاریخچه
 
-This project is built with:
+### نکات امنیتی
+- داده‌های کاربران مهمان در Session ذخیره می‌شود و با بستن مرورگر پاک می‌شود
+- ارتباطات از طریق HTTPS رمزنگاری شده است
+- Row Level Security (RLS) در دیتابیس فعال است
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
+## 🤝 مشارکت
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+از مشارکت شما استقبال می‌کنیم!
 
-## Can I connect a custom domain to my Lovable project?
+1. Fork کنید
+2. Branch بسازید (`git checkout -b feature/amazing-feature`)
+3. Commit کنید (`git commit -m 'Add amazing feature'`)
+4. Push کنید (`git push origin feature/amazing-feature`)
+5. Pull Request بسازید
 
-Yes, you can!
+---
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 📄 لایسنس
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+این پروژه تحت لایسنس MIT منتشر شده است. برای جزئیات بیشتر فایل [LICENSE](LICENSE) را ببینید.
+
+---
+
+## 🙏 تقدیر و تشکر
+
+- [PubMed/NCBI](https://pubmed.ncbi.nlm.nih.gov/) - دیتابیس مقالات پزشکی
+- [OpenAlex](https://openalex.org/) - کاتالوگ آزاد علمی
+- [Semantic Scholar](https://www.semanticscholar.org/) - جستجوی هوشمند مقالات
+- [arXiv](https://arxiv.org/) - آرشیو پیش‌چاپ‌های علمی
+- [Lovable](https://lovable.dev/) - پلتفرم توسعه
+- [Supabase](https://supabase.com/) - بکند Open Source
+- [shadcn/ui](https://ui.shadcn.com/) - کامپوننت‌های UI
+
+---
+
+## English
+
+### About
+
+Research Copilot is a comprehensive research platform for medical researchers, residents, and students. It provides tools for:
+- Multi-source article search (PubMed, OpenAlex, Semantic Scholar, arXiv)
+- Meta-analysis with Forest Plot visualization
+- Sample size calculation
+- Systematic review management
+- AI-powered article chat and analysis
+- Research proposal generation
+- Personal library (requires login)
+- Clinical calculators (NNT, eGFR, CURB-65, Wells Score)
+
+### Quick Start
+
+```bash
+git clone <YOUR_GIT_URL>
+cd <YOUR_PROJECT_NAME>
+npm install
+npm run dev
+```
+
+### API Rate Limits Summary
+
+| API | Rate Limit | API Key Required |
+|-----|------------|------------------|
+| PubMed | 3-10 req/sec | Optional |
+| OpenAlex | 100K req/day | No |
+| Semantic Scholar | 100 req/5min | Optional |
+| arXiv | ~1 req/3sec | No |
+| Lovable AI | Workspace-based | Auto-configured |
+
+### License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+<div align="center">
+
+**ساخته شده با ❤️ برای جامعه پزشکی ایران**
+
+</div>
