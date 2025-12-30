@@ -53,9 +53,9 @@ serve(async (req) => {
       });
     }
 
-    // Check if AI is configured (supports multiple providers)
+    // Check if AI is configured (supports cascading providers)
     if (!API_CONFIG.ai.isConfigured) {
-      console.error(`AI provider (${API_CONFIG.ai.provider}) not configured`);
+      console.error('No AI provider configured');
       return new Response(JSON.stringify({ error: 'Service temporarily unavailable' }), {
         status: 503,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -186,13 +186,14 @@ Include all major sections with brief content for each:
 
     const prompt = sectionPrompts[section];
 
-    console.log(`Generating proposal section: ${section} using ${API_CONFIG.ai.provider}`);
+    console.log(`Generating proposal section: ${section}`);
 
-    // Use centralized AI caller (supports Lovable, OpenAI, Anthropic)
-    const { content, error } = await callAI([
+    // Use centralized AI caller with cascading fallback
+    const { content, error, provider } = await callAI([
       { role: 'system', content: 'You are an expert academic writer specializing in research proposals.' },
       { role: 'user', content: prompt }
-    ]);
+    ], { complexity: 'high' });
+    if (provider) console.log(`Used provider: ${provider}`);
 
     if (error) {
       console.error('AI proposal error:', error);

@@ -42,9 +42,9 @@ serve(async (req) => {
       });
     }
 
-    // Check if AI is configured (supports multiple providers)
+    // Check if AI is configured (supports cascading providers)
     if (!API_CONFIG.ai.isConfigured) {
-      console.error(`AI provider (${API_CONFIG.ai.provider}) not configured`);
+      console.error('No AI provider configured');
       return new Response(JSON.stringify({ error: 'Service temporarily unavailable' }), {
         status: 503,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -151,13 +151,15 @@ For each article, extract:
 
     const prompt = prompts[type];
 
-    console.log(`Analyzing ${articles.length} articles with type: ${type} using ${API_CONFIG.ai.provider}`);
+    console.log(`Analyzing ${articles.length} articles with type: ${type}`);
 
-    // Use centralized AI caller (supports Lovable, OpenAI, Anthropic)
-    const { content: result, error } = await callAI([
+    // Use centralized AI caller with cascading fallback
+    const { content: result, error, provider } = await callAI([
       { role: 'system', content: 'You are an expert academic research assistant with deep knowledge of systematic reviews, meta-analyses, and research methodology.' },
       { role: 'user', content: prompt }
-    ]);
+    ], { complexity: 'high' });
+    
+    if (provider) console.log(`Used provider: ${provider}`);
 
     if (error) {
       console.error('AI analysis error:', error);

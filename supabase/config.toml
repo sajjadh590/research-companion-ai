@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.compare-studies]
 verify_jwt = false
+
+[functions.extract-study-data]
+verify_jwt = false

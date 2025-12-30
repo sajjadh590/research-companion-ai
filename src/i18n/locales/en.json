@@ -104,7 +104,21 @@
     "funnelPlot": "Funnel Plot",
     "heterogeneity": "Heterogeneity",
     "sensitivity": "Sensitivity Analysis",
-    "subgroup": "Subgroup Analysis"
+    "subgroup": "Subgroup Analysis",
+    "uploadStudyPdf": "Upload Study PDF",
+    "uploadStudyPdfDesc": "Upload a PDF to automatically extract study data using AI",
+    "uploadingPdf": "Processing PDF...",
+    "extractingData": "Extracting data...",
+    "selectPdfFile": "Select PDF File",
+    "extractedStudies": "Extracted Studies",
+    "reviewExtractedData": "Review the extracted data and add to your analysis",
+    "addToStudies": "Add",
+    "studyAdded": "Study Added",
+    "studiesExtracted": "studies extracted",
+    "extractionSuccess": "Data Extracted",
+    "extractionFailed": "Extraction Failed",
+    "noDataFound": "No Data Found",
+    "noDataFoundDesc": "Could not find study data in this PDF"
   },
   "sample": {
     "title": "Sample Size Calculator",
