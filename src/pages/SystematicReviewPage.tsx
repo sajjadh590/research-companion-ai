@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,12 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, XCircle, HelpCircle, FileText, Download, Brain, Loader2, ExternalLink, Search, Trash2 } from 'lucide-react';
+import { CheckCircle, XCircle, HelpCircle, FileText, Download, Brain, Loader2, ExternalLink, Search, Trash2, Upload } from 'lucide-react';
 import { Layout } from '@/components/Layout';
 import { analyzeArticles } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { useSelectedArticles } from '@/hooks/useSelectedArticles';
 import { ArticleSourceBadge } from '@/components/ArticleSourceBadge';
+import { parsePDF } from '@/lib/pdfParser';
 
 interface ScreeningArticle {
   id: string;
@@ -71,6 +72,9 @@ export default function SystematicReviewPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [picoResults, setPicoResults] = useState<string>('');
   const [robResults, setRobResults] = useState<Map<string, Record<string, 'low' | 'moderate' | 'high' | 'unclear'>>>(new Map());
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
 
   const updateStatus = (id: string, status: 'included' | 'excluded' | 'maybe') => {
     setArticles(articles.map(a => a.id === id ? { ...a, status } : a));
@@ -137,6 +141,67 @@ export default function SystematicReviewPage() {
       title: t('systematic.workspaceCleared'), 
       description: t('systematic.allArticlesRemoved'),
     });
+  };
+
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    const newArticles: ScreeningArticle[] = [];
+    const totalFiles = files.length;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      try {
+        const parsed = await parsePDF(file);
+        
+        // Extract title from first line or filename
+        const lines = parsed.text.split('\n').filter(l => l.trim());
+        const title = lines[0]?.slice(0, 200) || file.name.replace('.pdf', '');
+        
+        // Extract abstract - look for "Abstract" section or use first 500 words
+        let abstract = '';
+        const abstractMatch = parsed.text.match(/abstract[:\s]*(.{100,1500})/i);
+        if (abstractMatch) {
+          abstract = abstractMatch[1].trim();
+        } else {
+          abstract = parsed.text.slice(0, 1500).trim();
+        }
+
+        newArticles.push({
+          id: `upload-${Date.now()}-${i}`,
+          title,
+          abstract,
+          status: 'pending',
+          source: 'Upload',
+          sourceId: file.name,
+        });
+
+        setUploadProgress(((i + 1) / totalFiles) * 100);
+      } catch (error) {
+        console.error(`Failed to parse ${file.name}:`, error);
+        toast({
+          title: t('common.error'),
+          description: `${t('systematic.uploadFailed')}: ${file.name}`,
+          variant: 'destructive',
+        });
+      }
+    }
+
+    if (newArticles.length > 0) {
+      setArticles(prev => [...prev, ...newArticles]);
+      toast({
+        title: t('systematic.uploadSuccess'),
+        description: t('systematic.filesUploaded', { count: newArticles.length }),
+      });
+    }
+
+    setIsUploading(false);
+    setUploadProgress(0);
+    if (pdfInputRef.current) pdfInputRef.current.value = '';
   };
 
   const counts = {
@@ -252,8 +317,43 @@ export default function SystematicReviewPage() {
           <TabsContent value="screening" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Title/Abstract Screening</CardTitle>
-                <CardDescription>Review articles and decide on inclusion/exclusion</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>{t('systematic.screeningTitle')}</CardTitle>
+                    <CardDescription>{t('systematic.screeningDesc')}</CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      ref={pdfInputRef}
+                      onChange={handlePdfUpload}
+                      accept=".pdf"
+                      multiple
+                      className="hidden"
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={() => pdfInputRef.current?.click()}
+                      disabled={isUploading}
+                      className="gap-2"
+                    >
+                      {isUploading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4" />
+                      )}
+                      {t('systematic.uploadPdfs')}
+                    </Button>
+                  </div>
+                </div>
+                {isUploading && (
+                  <div className="mt-4">
+                    <Progress value={uploadProgress} className="h-2" />
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {t('systematic.uploadingFiles')} ({uploadProgress.toFixed(0)}%)
+                    </p>
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
                 <Table>

@@ -93,7 +93,14 @@
     "articlesInWorkspace": "articles in workspace",
     "clearWorkspace": "Clear Workspace",
     "workspaceCleared": "Workspace Cleared",
-    "allArticlesRemoved": "All articles removed from workspace"
+    "allArticlesRemoved": "All articles removed from workspace",
+    "uploadPdfs": "Upload PDFs",
+    "uploadingFiles": "Uploading files...",
+    "uploadSuccess": "Upload Successful",
+    "filesUploaded": "{{count}} file(s) uploaded",
+    "uploadFailed": "Upload failed",
+    "screeningTitle": "Title/Abstract Screening",
+    "screeningDesc": "Review articles and decide on inclusion/exclusion"
   },
   "meta": {
     "title": "Meta-Analysis",

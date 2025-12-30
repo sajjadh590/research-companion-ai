@@ -93,7 +93,14 @@
     "articlesInWorkspace": "مقاله در فضای کار",
     "clearWorkspace": "پاک کردن فضای کار",
     "workspaceCleared": "فضای کار پاک شد",
-    "allArticlesRemoved": "همه مقالات از فضای کار حذف شدند"
+    "allArticlesRemoved": "همه مقالات از فضای کار حذف شدند",
+    "uploadPdfs": "آپلود PDF",
+    "uploadingFiles": "در حال آپلود فایل‌ها...",
+    "uploadSuccess": "آپلود موفق",
+    "filesUploaded": "{{count}} فایل آپلود شد",
+    "uploadFailed": "آپلود ناموفق",
+    "screeningTitle": "غربالگری عنوان/چکیده",
+    "screeningDesc": "مقالات را بررسی کرده و درباره ورود/خروج تصمیم بگیرید"
   },
   "meta": {
     "title": "متاآنالیز",
@@ -104,7 +111,16 @@
     "funnelPlot": "نمودار Funnel",
     "heterogeneity": "ناهمگنی",
     "sensitivity": "تحلیل حساسیت",
-    "subgroup": "تحلیل زیرگروه"
+    "subgroup": "تحلیل زیرگروه",
+    "uploadStudyPdf": "آپلود PDF مطالعه",
+    "extractingData": "در حال استخراج داده از PDF...",
+    "extractedStudies": "مطالعات استخراج شده",
+    "addToStudies": "افزودن به مطالعات",
+    "discardExtracted": "حذف",
+    "noDataExtracted": "داده‌ای استخراج نشد",
+    "extractionFailed": "استخراج داده از PDF ناموفق بود",
+    "studiesExtracted": "{{count}} مطالعه استخراج شد",
+    "reviewExtracted": "داده‌های استخراج شده را بررسی و ویرایش کنید"
   },
   "sample": {
     "title": "محاسبه حجم نمونه",
