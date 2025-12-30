@@ -50,9 +50,9 @@ serve(async (req) => {
       });
     }
 
-    // Check if AI is configured (supports multiple providers)
+    // Check if AI is configured (supports cascading providers)
     if (!API_CONFIG.ai.isConfigured) {
-      console.error(`AI provider (${API_CONFIG.ai.provider}) not configured`);
+      console.error('No AI provider configured');
       return new Response(JSON.stringify({ error: 'Service temporarily unavailable' }), {
         status: 503,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -96,10 +96,11 @@ Keep responses concise but informative. Use the article numbers in brackets when
       { role: 'user', content: question }
     ];
 
-    console.log(`Chat with ${articles.length} articles using ${API_CONFIG.ai.provider}`);
+    console.log(`Chat with ${articles.length} articles`);
 
-    // Use centralized AI caller (supports Lovable, OpenAI, Anthropic)
-    const { content: responseText, error } = await callAI(messages);
+    // Use centralized AI caller with cascading fallback (low complexity for chat)
+    const { content: responseText, error, provider } = await callAI(messages, { complexity: 'low' });
+    if (provider) console.log(`Used provider: ${provider}`);
 
     if (error) {
       console.error('AI chat error:', error);

@@ -53,51 +53,49 @@ export const API_CONFIG = {
   },
 
   // ============================================
-  // AI Provider Configuration
-  // Supports: 'lovable' | 'openai' | 'anthropic'
-  // Default: Lovable AI Gateway (no setup needed)
+  // AI Provider Configuration - Cascading Fallback
+  // Priority: Groq 70B -> Groq 8B -> Lovable Gateway
   // ============================================
   ai: {
-    provider: (Deno.env.get('AI_PROVIDER') || 'lovable') as 'lovable' | 'openai' | 'anthropic',
-    
-    // Lovable AI Gateway (default)
-    lovable: {
-      baseUrl: 'https://ai.gateway.lovable.dev/v1/chat/completions',
-      apiKey: Deno.env.get('LOVABLE_API_KEY') || '',
-      defaultModel: 'google/gemini-2.5-flash',
-      availableModels: [
-        'google/gemini-2.5-flash',
-        'google/gemini-2.5-pro',
-        'openai/gpt-5',
-        'openai/gpt-5-mini',
-      ],
+    // Provider configurations
+    providers: {
+      groq_70b: {
+        name: 'Groq Llama 3.3 70B',
+        baseUrl: 'https://api.groq.com/openai/v1/chat/completions',
+        apiKey: Deno.env.get('GROQ_API_KEY') || '',
+        model: 'llama-3.3-70b-versatile',
+        complexity: 'high' as const,
+      },
+      groq_8b: {
+        name: 'Groq Llama 3.1 8B',
+        baseUrl: 'https://api.groq.com/openai/v1/chat/completions',
+        apiKey: Deno.env.get('GROQ_API_KEY') || '',
+        model: 'llama-3.1-8b-instant',
+        complexity: 'low' as const,
+      },
+      lovable: {
+        name: 'Lovable AI Gateway',
+        baseUrl: 'https://ai.gateway.lovable.dev/v1/chat/completions',
+        apiKey: Deno.env.get('LOVABLE_API_KEY') || '',
+        model: 'google/gemini-2.5-flash',
+        complexity: 'any' as const,
+      },
     },
     
-    // OpenAI (optional)
-    openai: {
-      baseUrl: 'https://api.openai.com/v1/chat/completions',
-      apiKey: Deno.env.get('OPENAI_API_KEY') || '',
-      defaultModel: 'gpt-4o-mini',
-      availableModels: ['gpt-4o-mini', 'gpt-4o', 'gpt-5'],
+    // Priority list for fallback
+    priorityList: ['groq_70b', 'groq_8b', 'lovable'] as const,
+    
+    // Get available providers (those with API keys)
+    get availableProviders() {
+      return this.priorityList.filter(key => {
+        const provider = this.providers[key];
+        return !!provider.apiKey;
+      });
     },
     
-    // Anthropic (optional)
-    anthropic: {
-      baseUrl: 'https://api.anthropic.com/v1/messages',
-      apiKey: Deno.env.get('ANTHROPIC_API_KEY') || '',
-      defaultModel: 'claude-sonnet-4-20250514',
-      availableModels: ['claude-sonnet-4-20250514', 'claude-3-5-haiku-20241022'],
-    },
-    
-    // Get current provider config
-    get current() {
-      return this[this.provider];
-    },
-    
-    // Check if AI is properly configured
+    // Check if any AI is configured
     get isConfigured(): boolean {
-      const currentProvider = this[this.provider];
-      return !!currentProvider.apiKey;
+      return this.availableProviders.length > 0;
     },
   },
 };
@@ -149,54 +147,51 @@ export function getOpenAlexHeaders(): Record<string, string> {
 }
 
 // ============================================
-// Helper: Make AI API call (supports multiple providers)
+// Helper: Make AI API call with Cascading Fallback
+// Tries providers in priority order, skips if missing key
 // ============================================
 export async function callAI(
   messages: { role: string; content: string }[],
-  options?: { model?: string; temperature?: number; maxTokens?: number }
-): Promise<{ content: string; error?: string }> {
+  options?: { 
+    model?: string; 
+    temperature?: number; 
+    maxTokens?: number;
+    complexity?: 'high' | 'low';  // 'high' uses 70B first, 'low' uses 8B first
+  }
+): Promise<{ content: string; error?: string; provider?: string }> {
   const config = API_CONFIG.ai;
-  const provider = config.provider;
-  const providerConfig = config.current;
   
-  if (!providerConfig.apiKey) {
-    return { content: '', error: `${provider} API key not configured` };
+  if (!config.isConfigured) {
+    return { content: '', error: 'No AI provider configured. Please add GROQ_API_KEY or LOVABLE_API_KEY.' };
   }
   
-  const model = options?.model || providerConfig.defaultModel;
+  // Determine priority order based on complexity
+  let priorityOrder = [...config.priorityList];
+  if (options?.complexity === 'low') {
+    // For low complexity, prefer 8B over 70B
+    priorityOrder = ['groq_8b', 'groq_70b', 'lovable'];
+  }
   
-  try {
-    if (provider === 'anthropic') {
-      // Anthropic has different API format
-      const response = await fetch(providerConfig.baseUrl, {
+  const errors: string[] = [];
+  
+  for (const providerKey of priorityOrder) {
+    const provider = config.providers[providerKey];
+    
+    // Skip if no API key
+    if (!provider.apiKey) {
+      console.log(`[AI] Skipping ${provider.name}: No API key`);
+      continue;
+    }
+    
+    const model = options?.model || provider.model;
+    
+    try {
+      console.log(`[AI] Trying ${provider.name} with model ${model}...`);
+      
+      const response = await fetch(provider.baseUrl, {
         method: 'POST',
         headers: {
-          'x-api-key': providerConfig.apiKey,
-          'anthropic-version': '2023-06-01',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model,
-          max_tokens: options?.maxTokens || 4096,
-          messages: messages.filter(m => m.role !== 'system'),
-          system: messages.find(m => m.role === 'system')?.content || '',
-        }),
-      });
-      
-      if (!response.ok) {
-        const error = await response.text();
-        console.error('Anthropic API error:', error);
-        return { content: '', error: `API error: ${response.status}` };
-      }
-      
-      const data = await response.json();
-      return { content: data.content?.[0]?.text || '' };
-    } else {
-      // OpenAI and Lovable use the same format
-      const response = await fetch(providerConfig.baseUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${providerConfig.apiKey}`,
+          'Authorization': `Bearer ${provider.apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -207,25 +202,50 @@ export async function callAI(
         }),
       });
       
+      // Handle rate limits and server errors - try next provider
+      if (response.status === 429) {
+        console.warn(`[AI] ${provider.name}: Rate limited (429), trying next...`);
+        errors.push(`${provider.name}: Rate limited`);
+        continue;
+      }
+      
+      if (response.status === 402) {
+        console.warn(`[AI] ${provider.name}: Quota exceeded (402), trying next...`);
+        errors.push(`${provider.name}: Quota exceeded`);
+        continue;
+      }
+      
+      if (response.status >= 500) {
+        console.warn(`[AI] ${provider.name}: Server error (${response.status}), trying next...`);
+        errors.push(`${provider.name}: Server error ${response.status}`);
+        continue;
+      }
+      
       if (!response.ok) {
-        if (response.status === 429) {
-          return { content: '', error: 'Rate limit exceeded. Please try again later.' };
-        }
-        if (response.status === 402) {
-          return { content: '', error: 'Service quota exceeded. Please try again later.' };
-        }
-        const error = await response.text();
-        console.error(`${provider} API error:`, error);
-        return { content: '', error: `API error: ${response.status}` };
+        const errorText = await response.text();
+        console.error(`[AI] ${provider.name} error:`, errorText);
+        errors.push(`${provider.name}: ${response.status}`);
+        continue;
       }
       
       const data = await response.json();
-      return { content: data.choices?.[0]?.message?.content || '' };
+      const content = data.choices?.[0]?.message?.content || '';
+      
+      console.log(`[AI] Success with ${provider.name}`);
+      return { content, provider: provider.name };
+      
+    } catch (error) {
+      console.error(`[AI] ${provider.name} exception:`, error);
+      errors.push(`${provider.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      continue;
     }
-  } catch (error) {
-    console.error('AI call error:', error);
-    return { content: '', error: error instanceof Error ? error.message : 'Unknown error' };
   }
+  
+  // All providers failed
+  return { 
+    content: '', 
+    error: `All AI providers failed: ${errors.join('; ')}` 
+  };
 }
 
 // ============================================
@@ -233,17 +253,13 @@ export async function callAI(
 // ============================================
 // Add these secrets in Supabase Dashboard:
 //
-// Required:
-// - LOVABLE_API_KEY (auto-configured by Lovable)
+// Required (at least one):
+// - GROQ_API_KEY         : Free tier at console.groq.com
+// - LOVABLE_API_KEY      : Auto-configured by Lovable
 //
 // Optional (for enhanced features):
-// - PUBMED_API_KEY      : Increase rate limit to 10 req/sec
-// - PUBMED_EMAIL        : Required for PubMed API key
+// - PUBMED_API_KEY       : Increase rate limit to 10 req/sec
+// - PUBMED_EMAIL         : Required for PubMed API key
 // - SEMANTIC_SCHOLAR_API_KEY : Get stable 1 req/sec rate
-// - OPENALEX_EMAIL      : Access to polite pool (faster)
-//
-// To switch AI provider:
-// - AI_PROVIDER         : 'lovable' | 'openai' | 'anthropic'
-// - OPENAI_API_KEY      : If using OpenAI
-// - ANTHROPIC_API_KEY   : If using Anthropic
+// - OPENALEX_EMAIL       : Access to polite pool (faster)
 // ============================================

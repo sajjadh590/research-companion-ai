@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,12 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Plus, Trash2, BarChart3, Download, Calculator, Info, Code } from 'lucide-react';
+import { Plus, Trash2, BarChart3, Download, Calculator, Info, Code, Upload, Loader2, FileText, Check, X } from 'lucide-react';
 import { Layout } from '@/components/Layout';
 import { calculateMetaAnalysis, eggersTest, leaveOneOutAnalysis } from '@/lib/statistics';
 import type { MetaAnalysisStudy, MetaAnalysisResult } from '@/types/research';
 import { useToast } from '@/hooks/use-toast';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ErrorBar, ScatterChart, Scatter, ZAxis } from 'recharts';
+import { parsePDF } from '@/lib/pdfParser';
+import { supabase } from '@/integrations/supabase/client';
 
 // Formula references for transparency
 const FORMULA_REFS = {
@@ -34,6 +36,20 @@ const FORMULA_REFS = {
     reference: 'DerSimonian & Laird, 1986'
   }
 };
+
+interface ExtractedStudy {
+  studyName: string;
+  sampleSizeControl: number | null;
+  sampleSizeIntervention: number | null;
+  meanControl: number | null;
+  meanIntervention: number | null;
+  sdControl: number | null;
+  sdIntervention: number | null;
+  effectSize: number | null;
+  standardError: number | null;
+  eventsControl: number | null;
+  eventsIntervention: number | null;
+}
 
 function FormulaTooltip({ formulaKey }: { formulaKey: keyof typeof FORMULA_REFS }) {
   const ref = FORMULA_REFS[formulaKey];
@@ -62,13 +78,18 @@ const defaultStudy: Partial<MetaAnalysisStudy> = {
 };
 
 export default function MetaAnalysisPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [studies, setStudies] = useState<MetaAnalysisStudy[]>([]);
   const [newStudy, setNewStudy] = useState(defaultStudy);
   const [effectSizeType, setEffectSizeType] = useState('smd');
   const [result, setResult] = useState<MetaAnalysisResult | null>(null);
+  
+  // PDF extraction state
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [extractedStudies, setExtractedStudies] = useState<ExtractedStudy[]>([]);
 
   const addStudy = () => {
     if (!newStudy.studyName || newStudy.standardError === 0) {
@@ -108,6 +129,116 @@ export default function MetaAnalysisPage() {
     } catch (error) {
       toast({ title: 'Error', description: 'Failed to run meta-analysis', variant: 'destructive' });
     }
+  };
+
+  // Handle PDF upload
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+
+    setIsExtracting(true);
+    toast({ title: t('meta.uploadingPdf'), description: file.name });
+
+    try {
+      // Parse PDF
+      const pdfResult = await parsePDF(file);
+      
+      if (!pdfResult.text && pdfResult.tables.length === 0) {
+        throw new Error('No content extracted from PDF');
+      }
+
+      // Call edge function to extract study data
+      const { data, error } = await supabase.functions.invoke('extract-study-data', {
+        body: {
+          text: pdfResult.text,
+          tables: pdfResult.tables,
+          language: i18n.language,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.studies && data.studies.length > 0) {
+        setExtractedStudies(data.studies);
+        toast({ 
+          title: t('meta.extractionSuccess'), 
+          description: `${data.studies.length} ${t('meta.studiesExtracted')}`,
+        });
+      } else {
+        toast({ 
+          title: t('meta.noDataFound'), 
+          description: t('meta.noDataFoundDesc'),
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('PDF extraction error:', error);
+      toast({ 
+        title: t('meta.extractionFailed'), 
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsExtracting(false);
+    }
+  };
+
+  // Add extracted study to table
+  const addExtractedStudy = (extracted: ExtractedStudy) => {
+    // Calculate effect size and SE if we have the raw data
+    let effectSize = extracted.effectSize || 0;
+    let standardError = extracted.standardError || 0.1;
+
+    // If we have means and SDs, calculate SMD
+    if (extracted.meanControl !== null && extracted.meanIntervention !== null &&
+        extracted.sdControl !== null && extracted.sdIntervention !== null &&
+        extracted.sampleSizeControl !== null && extracted.sampleSizeIntervention !== null) {
+      
+      const pooledSD = Math.sqrt(
+        ((extracted.sampleSizeControl - 1) * extracted.sdControl ** 2 + 
+         (extracted.sampleSizeIntervention - 1) * extracted.sdIntervention ** 2) /
+        (extracted.sampleSizeControl + extracted.sampleSizeIntervention - 2)
+      );
+      
+      if (pooledSD > 0) {
+        effectSize = (extracted.meanIntervention - extracted.meanControl) / pooledSD;
+        standardError = Math.sqrt(
+          (extracted.sampleSizeControl + extracted.sampleSizeIntervention) / 
+          (extracted.sampleSizeControl * extracted.sampleSizeIntervention) +
+          (effectSize ** 2) / (2 * (extracted.sampleSizeControl + extracted.sampleSizeIntervention))
+        );
+      }
+    }
+
+    const study: MetaAnalysisStudy = {
+      id: crypto.randomUUID(),
+      projectId: '',
+      studyName: extracted.studyName,
+      effectSize,
+      effectSizeType: effectSizeType,
+      standardError,
+      variance: standardError ** 2,
+      sampleSizeControl: extracted.sampleSizeControl || undefined,
+      sampleSizeTreatment: extracted.sampleSizeIntervention || undefined,
+      meanControl: extracted.meanControl || undefined,
+      meanTreatment: extracted.meanIntervention || undefined,
+      sdControl: extracted.sdControl || undefined,
+      sdTreatment: extracted.sdIntervention || undefined,
+    };
+
+    setStudies([...studies, study]);
+    setExtractedStudies(extractedStudies.filter(e => e !== extracted));
+    toast({ title: t('meta.studyAdded'), description: extracted.studyName });
+  };
+
+  // Discard extracted study
+  const discardExtractedStudy = (extracted: ExtractedStudy) => {
+    setExtractedStudies(extractedStudies.filter(e => e !== extracted));
   };
 
   const forestPlotData = useMemo(() => {
@@ -166,6 +297,110 @@ export default function MetaAnalysisPage() {
 
           {/* Data Entry Tab */}
           <TabsContent value="data" className="space-y-6">
+            {/* PDF Upload Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Upload className="w-5 h-5" />
+                  {t('meta.uploadStudyPdf')}
+                </CardTitle>
+                <CardDescription>{t('meta.uploadStudyPdfDesc')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.csv"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <Button 
+                  onClick={() => fileInputRef.current?.click()} 
+                  disabled={isExtracting}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  {isExtracting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      {t('meta.extractingData')}
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="w-4 h-4" />
+                      {t('meta.selectPdfFile')}
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Extracted Studies Review */}
+            {extractedStudies.length > 0 && (
+              <Card className="border-primary">
+                <CardHeader>
+                  <CardTitle className="text-primary">{t('meta.extractedStudies')}</CardTitle>
+                  <CardDescription>{t('meta.reviewExtractedData')}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {extractedStudies.map((study, index) => (
+                    <div key={index} className="p-4 border rounded-lg bg-muted/50 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-medium">{study.studyName}</h4>
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={() => addExtractedStudy(study)} className="gap-1">
+                            <Check className="w-4 h-4" /> {t('meta.addToStudies')}
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => discardExtractedStudy(study)}>
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">N (Control): </span>
+                          <span>{study.sampleSizeControl ?? 'NR'}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">N (Intervention): </span>
+                          <span>{study.sampleSizeIntervention ?? 'NR'}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Mean (C): </span>
+                          <span>{study.meanControl?.toFixed(2) ?? 'NR'}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Mean (I): </span>
+                          <span>{study.meanIntervention?.toFixed(2) ?? 'NR'}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">SD (C): </span>
+                          <span>{study.sdControl?.toFixed(2) ?? 'NR'}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">SD (I): </span>
+                          <span>{study.sdIntervention?.toFixed(2) ?? 'NR'}</span>
+                        </div>
+                        {study.effectSize !== null && (
+                          <div>
+                            <span className="text-muted-foreground">Effect: </span>
+                            <span>{study.effectSize.toFixed(3)}</span>
+                          </div>
+                        )}
+                        {study.standardError !== null && (
+                          <div>
+                            <span className="text-muted-foreground">SE: </span>
+                            <span>{study.standardError.toFixed(3)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Manual Data Entry */}
             <Card>
               <CardHeader>
                 <CardTitle>Add Study Data</CardTitle>
